@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "240600961152",
+    "project_id": "amst-proyecto-b1c73",
+    "storage_bucket": "amst-proyecto-b1c73.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:240600961152:android:986f6151b8776e65e45665",
+        "android_client_info": {
+          "package_name": "com.example.iot"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "240600961152-fc720t95sp32brlt1mbaq30023k1ss1l.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCXtmFmOjVY90S5u3s03xWOJ3mXgfGs0bQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "240600961152-fc720t95sp32brlt1mbaq30023k1ss1l.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
