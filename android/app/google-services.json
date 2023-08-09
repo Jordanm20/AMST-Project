@@ -30,6 +30,13 @@
             {
               "client_id": "357457456413-8fmr3foe0p2mimrkk8156n8vei4thfg3.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "357457456413-0tebdo065s4gqmon2d468f5cacrtqknk.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.iot.RunnerTests"
+              }
             }
           ]
         }
