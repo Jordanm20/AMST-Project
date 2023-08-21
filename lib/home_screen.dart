@@ -9,7 +9,7 @@ class HomeScreen extends StatefulWidget {
   @override
   _HomeScreenState createState() => _HomeScreenState();
 }
-
+//Inicio de estado de HomeScreen
 class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
   List<Widget> _pages = [];

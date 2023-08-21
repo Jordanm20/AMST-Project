@@ -13,7 +13,7 @@ class _LoginScreenState extends State<LoginScreen> {
   TextEditingController _passwordController = TextEditingController();
   bool _passwordVisibility = false;
   GoogleSignIn _googleSignIn = GoogleSignIn();
-
+//Creación de la opcion Login son credenciales generales
   void _login() {
     String username = _usernameController.text;
     String password = _passwordController.text;
@@ -35,7 +35,7 @@ class _LoginScreenState extends State<LoginScreen> {
       );
     }
   }
-
+//Apartado de inicio de sesion con cuenta previa de Google
   void _loginWithGoogle() async {
     try {
       await _googleSignIn.signIn();
