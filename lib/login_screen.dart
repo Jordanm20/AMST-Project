@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_signin_button/button_list.dart';
+import 'package:flutter_signin_button/button_view.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:flutter_signin_button/flutter_signin_button.dart';
 import 'home_screen.dart';
+import 'package:firebase_database/firebase_database.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'home_screen_cliente.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -13,40 +18,66 @@ class _LoginScreenState extends State<LoginScreen> {
   TextEditingController _passwordController = TextEditingController();
   bool _passwordVisibility = false;
   GoogleSignIn _googleSignIn = GoogleSignIn();
-//Creación de la opcion Login son credenciales generales
-  void _login() {
-    String username = _usernameController.text;
+  FirebaseAuth _auth = FirebaseAuth.instance;
+  void _login() async {
+    String email = _usernameController.text;
     String password = _passwordController.text;
 
-    // Verificar las credenciales ingresadas
-    if (username == 'admin' && password == '1234') {
-      // Credenciales válidas, redirigir a la pantalla de inicio
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => HomeScreen()),
-      );
-    } else {
-      // Credenciales inválidas, mostrar mensaje de error
-      // Mostramos un SnackBar con el mensaje de error
+    try {
+      UserCredential authResult = await _auth.signInWithEmailAndPassword(email: email, password: password);
+      if (authResult.user != null) {
+        String uid = authResult.user!.uid;
+        print("UID: $uid"); // Print UID value to the console
+        // Initialize a reference to the Firebase Realtime Database
+        DatabaseReference ref = FirebaseDatabase.instance.ref("users/clientes/$uid");
+        DatabaseEvent event = await ref.once();
+        dynamic data = event.snapshot.value; // Almacenar el valor en una variable llamada "data"
+        DatabaseReference ref2 = FirebaseDatabase.instance.ref("users/vendedores/$uid");
+        DatabaseEvent event2 = await ref2.once();
+        dynamic data2 = event2.snapshot.value; // Almacenar el valor en una variable llamada "data"
+        if(data!=null){
+          print("Result ${data}");
+          print("Es un cliente");
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => HomeScreen_cliente(data)),
+          );
+        }
+        if(data2!=null){
+          print("Result ${data2}");
+          print("Es un vendedor");
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => HomeScreen()),
+          );
+        }
+        // Search for the user in the "clientes" section
+
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error al iniciar sesión. Inténtalo de nuevo.'),
+          ),
+        );
+      }
+    } catch (error) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Credenciales inválidas. Inténtalo de nuevo.'),
+          content: Text('Error al iniciar sesión. Inténtalo de nuevo.'),
         ),
       );
     }
   }
-//Apartado de inicio de sesion con cuenta previa de Google
+
+
   void _loginWithGoogle() async {
     try {
       await _googleSignIn.signIn();
-      // El inicio de sesión con Google fue exitoso, redirigir a la pantalla de inicio
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => HomeScreen()),
       );
     } catch (error) {
-      print('Error al iniciar sesión con Google: $error');
-      // Mostrar mensaje de error
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Error al iniciar sesión con Google. Inténtalo de nuevo.'),

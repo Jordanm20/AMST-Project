@@ -73,7 +73,7 @@ class WelcomeScreen extends StatelessWidget {
                               MaterialPageRoute(builder: (context) => LoginScreen()),
                             );
                           },
-                          child: Text('Sign In'),
+                          child: Text('Iniciar Sesión'), // Cambié el texto del botón para que esté en español
                           style: ElevatedButton.styleFrom(
                             primary: Color(0xFFEF5339),
                             textStyle: TextStyle(
