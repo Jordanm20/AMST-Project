@@ -6,7 +6,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'home_screen.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'home_screen_cliente.dart';
+import 'cliente_pages/home_screen_cliente.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -19,31 +19,42 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _passwordVisibility = false;
   GoogleSignIn _googleSignIn = GoogleSignIn();
   FirebaseAuth _auth = FirebaseAuth.instance;
+
+  @override
+  void dispose() {
+    _usernameController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
   void _login() async {
     String email = _usernameController.text;
     String password = _passwordController.text;
 
     try {
-      UserCredential authResult = await _auth.signInWithEmailAndPassword(email: email, password: password);
+      UserCredential authResult = await _auth.signInWithEmailAndPassword(
+          email: email, password: password);
       if (authResult.user != null) {
         String uid = authResult.user!.uid;
-        print("UID: $uid"); // Print UID value to the console
-        // Initialize a reference to the Firebase Realtime Database
-        DatabaseReference ref = FirebaseDatabase.instance.ref("users/clientes/$uid");
+        DatabaseReference ref =
+            FirebaseDatabase.instance.ref("users/clientes/$uid");
         DatabaseEvent event = await ref.once();
-        dynamic data = event.snapshot.value; // Almacenar el valor en una variable llamada "data"
-        DatabaseReference ref2 = FirebaseDatabase.instance.ref("users/vendedores/$uid");
+        dynamic data = event.snapshot
+            .value; // Almacenar el valor en una variable llamada "data"
+        DatabaseReference ref2 =
+            FirebaseDatabase.instance.ref("users/vendedores/$uid");
         DatabaseEvent event2 = await ref2.once();
-        dynamic data2 = event2.snapshot.value; // Almacenar el valor en una variable llamada "data"
-        if(data!=null){
+        dynamic data2 = event2.snapshot
+            .value; // Almacenar el valor en una variable llamada "data"
+        if (data != null) {
           print("Result ${data}");
           print("Es un cliente");
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (context) => HomeScreen_cliente(data)),
+            MaterialPageRoute(builder: (context) => HomeScreen_cliente()),
           );
         }
-        if(data2!=null){
+        if (data2 != null) {
           print("Result ${data2}");
           print("Es un vendedor");
           Navigator.pushReplacement(
@@ -52,7 +63,6 @@ class _LoginScreenState extends State<LoginScreen> {
           );
         }
         // Search for the user in the "clientes" section
-
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -69,7 +79,6 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-
   void _loginWithGoogle() async {
     try {
       await _googleSignIn.signIn();
@@ -80,7 +89,8 @@ class _LoginScreenState extends State<LoginScreen> {
     } catch (error) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Error al iniciar sesión con Google. Inténtalo de nuevo.'),
+          content:
+              Text('Error al iniciar sesión con Google. Inténtalo de nuevo.'),
         ),
       );
     }
@@ -93,7 +103,8 @@ class _LoginScreenState extends State<LoginScreen> {
       body: SingleChildScrollView(
         child: ConstrainedBox(
           constraints: BoxConstraints(
-            minHeight: MediaQuery.of(context).size.height - MediaQuery.of(context).padding.top,
+            minHeight: MediaQuery.of(context).size.height -
+                MediaQuery.of(context).padding.top,
           ),
           child: IntrinsicHeight(
             child: Column(
