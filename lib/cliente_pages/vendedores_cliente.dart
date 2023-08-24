@@ -2,20 +2,20 @@ import 'dart:async';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 
-class VendedoresPage_cliente extends StatefulWidget {
+class ProductosPage_cliente extends StatefulWidget {
   Map<dynamic, dynamic>? user;
-  VendedoresPage_cliente({super.key, required this.user});
+  ProductosPage_cliente({super.key, required this.user});
 
   @override
-  VendedoresPageState createState() => VendedoresPageState(user);
+  ProductosPageState createState() => ProductosPageState(user);
 }
 
-class VendedoresPageState extends State<VendedoresPage_cliente> {
+class ProductosPageState extends State<ProductosPage_cliente> {
   Map<dynamic, dynamic>? user;
   StreamSubscription<DatabaseEvent>? subVendedores;
   List<Map<dynamic, dynamic>> productos = [];
 
-  VendedoresPageState(this.user);
+  ProductosPageState(this.user);
 
   @override
   void initState() {
@@ -51,9 +51,25 @@ class VendedoresPageState extends State<VendedoresPage_cliente> {
     super.dispose();
   }
 
-  void addToCart(String idProducto, String idVendedor) {
-    print(idProducto);
-    print(idVendedor);
+  void addToCart(String idProducto, String idVendedor,
+      Map<dynamic, dynamic> producto) async {
+    DatabaseReference cartRef = FirebaseDatabase.instance.ref(
+        'users/clientes/${user!['carrito']['id']}/carrito/products/$idProducto');
+    final productoSnapshot = await cartRef.get();
+    if (!productoSnapshot.exists) {
+      final vendedorToSet = {
+        "cantidad": 1,
+        "precioUnitario": producto['precioUnidad'],
+        "descripcion": producto['descripcion'],
+        "idVendedor": idVendedor,
+      };
+      await cartRef.set(vendedorToSet);
+    } else {
+      await cartRef.update({
+        "cantidad":
+            (productoSnapshot.value as Map<dynamic, dynamic>)['cantidad'] + 1,
+      });
+    }
   }
 
   @override
@@ -135,11 +151,15 @@ class VendedoresPageState extends State<VendedoresPage_cliente> {
                   ElevatedButton(
                       style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.blueGrey.shade900),
-                      onPressed: () {
-                        addToCart(productos[index]['productId'],
-                            productos[index]['vendedorId']);
-                      },
-                      child: const Text('Añadir al carrito')),
+                      onPressed: productos[index]['cantidad'] == 0
+                          ? null
+                          : () {
+                              addToCart(
+                                  productos[index]['productId'],
+                                  productos[index]['vendedorId'],
+                                  productos[index]);
+                            },
+                      child: const Text('Añadir +1 al carrito')),
                 ],
               ),
             ),
