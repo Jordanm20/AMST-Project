@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
@@ -11,43 +13,52 @@ class HomeScreen_cliente extends StatefulWidget {
   HomeScreenState createState() => HomeScreenState();
 }
 
-//Inicio de estado de HomeScreen
 class HomeScreenState extends State<HomeScreen_cliente> {
+  StreamSubscription<DatabaseEvent>? subUser;
   User? user;
   final FirebaseAuth _auth = FirebaseAuth.instance;
   DatabaseReference? databaseReference;
   Map<dynamic, dynamic>? userData = {};
   String _tituloAppbar = "";
   final GlobalKey _carritoKey = GlobalKey();
+  final GlobalKey _vendedoresKey = GlobalKey();
 
   final List<Widget> _pages = [
-    VendedoresPage_cliente(),
+    SizedBox(),
   ];
   int _currentIndex = 0;
 
   @override
   void initState() {
-    super.initState();
     _auth.authStateChanges().listen((User? user) async {
       try {
         user = user!;
-        databaseReference = FirebaseDatabase.instance.ref();
-        final snapshot =
-            await databaseReference!.child('users/clientes/${user.uid}').get();
-        setState(() {
-          userData = snapshot.value as Map<dynamic, dynamic>;
-          _pages.add(CarritoPage_cliente(key: _carritoKey, user: userData));
-          _tituloAppbar =
-              "¡Bienvenido/a, ${userData!['firstName']} ${userData!['lastName']}!";
+        databaseReference =
+            FirebaseDatabase.instance.ref('users/clientes/${user.uid}');
+        subUser = databaseReference?.onValue.listen((DatabaseEvent event) {
+          if (!mounted) return;
+          setState(() {
+            userData = event.snapshot.value as Map<dynamic, dynamic>;
+            _pages.clear();
+            _pages.add(
+              VendedoresPage_cliente(key: _vendedoresKey, user: userData),
+            );
+            _pages.add(CarritoPage_cliente(key: _carritoKey, user: userData));
+            if (_currentIndex == 0) {
+              _tituloAppbar =
+                  "¡Bienvenido/a, ${userData!['firstName']} ${userData!['lastName']}!";
+            }
+          });
         });
       } catch (e) {}
     });
+    super.initState();
   }
 
   void _onTabSelected(int index) {
     setState(() {
       _currentIndex = index;
-      switch (index) {
+      switch (_currentIndex) {
         case 0:
           _tituloAppbar =
               "¡Bienvenido/a, ${userData!['firstName']} ${userData!['lastName']}!";
@@ -57,6 +68,14 @@ class HomeScreenState extends State<HomeScreen_cliente> {
           break;
       }
     });
+  }
+
+  int getCartLength() {
+    try {
+      return userData!['carrito']['products'].values.toList().length;
+    } catch (ex) {
+      return 0;
+    }
   }
 
   @override
@@ -69,19 +88,22 @@ class HomeScreenState extends State<HomeScreen_cliente> {
         actions: [
           (_currentIndex == 0
               ? IconButton(
-                  icon: Icon(
+                  icon: const Icon(
                     Icons.logout,
                     color: Colors.white,
                   ),
                   onPressed: () {
                     try {
-                      _auth.signOut();
-
+                      final VendedoresPageState vendedoresPageState =
+                          _vendedoresKey.currentState as VendedoresPageState;
+                      vendedoresPageState.unsub();
+                      subUser?.cancel();
                       Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(
                             builder: (context) => LoginScreen(),
                           ));
+                      _auth.signOut();
                     } catch (error) {}
                   },
                 )
@@ -97,20 +119,47 @@ class HomeScreenState extends State<HomeScreen_cliente> {
                         carritoPageState.clearCarrito();
                       },
                     )
-                  : SizedBox()),
+                  : const SizedBox()),
         ],
       ),
       body: _pages[_currentIndex],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: _onTabSelected,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.shop_2),
-            label: 'Home',
+        items: [
+          const BottomNavigationBarItem(
+            icon: Icon(Icons.shopping_bag_rounded),
+            label: 'Productos',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.shopping_cart),
+            //icon: Icon(Icons.shopping_cart),
+            icon: Stack(
+              children: [
+                const Icon(Icons.shopping_cart),
+                Positioned(
+                  right: 0,
+                  child: Container(
+                    padding: const EdgeInsets.all(1),
+                    decoration: BoxDecoration(
+                      color: Colors.red,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    constraints: const BoxConstraints(
+                      minWidth: 12,
+                      minHeight: 12,
+                    ),
+                    child: Text(
+                      "${getCartLength()}",
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 8,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                )
+              ],
+            ),
             label: 'Carrito',
           ),
         ],
