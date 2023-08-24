@@ -65,7 +65,7 @@ class WelcomeScreen extends StatelessWidget {
                         ),
                       ),
                       Padding(
-                        padding: EdgeInsets.only(top: screenSize.height * 0.07),
+                        padding: EdgeInsets.only(top: screenSize.height * 0.06),
                         child: ElevatedButton(
                           onPressed: () {
                             Navigator.push(
@@ -82,7 +82,7 @@ class WelcomeScreen extends StatelessWidget {
                               color: Colors.white,
                             ),
                             padding: EdgeInsets.symmetric(
-                              horizontal: screenSize.width * 0.37,
+                              horizontal: screenSize.width * 0.30,
                               vertical: screenSize.height * 0.025,
                             ),
                             shape: RoundedRectangleBorder(
