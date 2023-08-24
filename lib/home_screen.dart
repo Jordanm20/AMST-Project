@@ -1,125 +1,170 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'snack_screen.dart';
 import 'pastel_screen.dart';
+import 'package:fl_chart/fl_chart.dart';
 
 class HomeScreen extends StatefulWidget {
+  const HomeScreen({Key? key}) : super(key: key);
+
   @override
   _HomeScreenState createState() => _HomeScreenState();
 }
-//Inicio de estado de HomeScreen
+
 class _HomeScreenState extends State<HomeScreen> {
+  User? user;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  DatabaseReference? databaseReference;
+  Map<dynamic, dynamic>? userData = {};
+  Map<dynamic, dynamic>? userData2 = {};
+
+  String _tituloAppbar = "";
+
   int _currentIndex = 0;
   List<Widget> _pages = [];
   bool _isPesoVisible = true;
   bool _isTemperaturaVisible = true;
+  List<Map<String, dynamic>> sensorInfoList = [];
 
   @override
   void initState() {
+
     super.initState();
-    // Cargar datos de ThingSpeak al iniciar la página
-    _loadThingSpeakData();
+    _auth.authStateChanges().listen((User? user) async {
+      try {
+        user = user!;
+        databaseReference = FirebaseDatabase.instance.ref();
+        final snapshot =
+        await databaseReference!.child('users/vendedores/${user.uid}').get();
+        final snapshot2 =
+        await databaseReference!.child('sensores').get();
+        setState(() {
+          userData = snapshot.value as Map<dynamic, dynamic>;
+          userData2 = snapshot2.value as Map<dynamic, dynamic>;
+          userData2?.forEach((sensorKey, sensorData) {
+            if (sensorData.containsKey("idVendedor") &&
+                sensorData["idVendedor"] == user?.uid) {
+              Map<String, dynamic> sensorInfo = {
+                sensorKey: {
+                  "Peso": sensorData["peso"],
+                  "idProduct": sensorData["idProducto"],
+                }
+              };
+              sensorInfoList.add(sensorInfo);
+            }
+          });
+
+          print(sensorInfoList);
+
+          _tituloAppbar =
+          "¡Bienvenido/a, ${userData!['nombreEncargado']}!";
+          print("Resultvendedor ${_tituloAppbar}");
+
+          loadInterfaz();
+        });
+      } catch (e) {}
+    });
   }
 
-  void _loadThingSpeakData() async {
-    final apiKey = 'AVGW5LYQ3QWSF581'; // Reemplaza con tu clave de API
-    final channelId = '1625782'; // Reemplaza con el ID de tu canal de ThingSpeak
-    final response = await http.get(Uri.parse(
-        'https://api.thingspeak.com/channels/$channelId/feeds.json?results=1&api_key=$apiKey'));
-
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      final fieldValue = data['feeds'][0]['field1'];
-      final fieldValue2 = data['feeds'][0]['field2'];
-
-      setState(() {
-        _pages = [
-          Center(
-            child: Text(
-              'Dashboard',
-              style: TextStyle(fontSize: 24.0),
-            ),
+  void loadInterfaz() {
+    setState(() {
+      _pages = [
+        Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                _tituloAppbar,
+                style: TextStyle(fontSize: 24.0),
+              ),
+              Text(
+                "Dashboard",
+                style: TextStyle(fontSize: 24.0),
+              ),
+              Expanded(
+                child: buildBarChart(), // Your bar chart widget
+              ),
+            ],
           ),
-          Center(
-            child: Column(
-              children: [
-                GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => SnackScreen()),
-                    );
-                  },
-                  child: Visibility(
-                    visible: _isPesoVisible,
-                    child: Card(
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Image.asset(
-                            'assets/snack.png',
-                            width: 100,
-                            height: 100,
-                            fit: BoxFit.cover,
+        ),
+        Center(
+          child: Column(
+            children: [
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => SnackScreen()),
+                  );
+                },
+                child: Visibility(
+                  visible: _isPesoVisible,
+                  child: Card(
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Image.asset(
+                          'assets/snack.png',
+                          width: 100,
+                          height: 100,
+                          fit: BoxFit.cover,
+                        ),
+                        Expanded(
+                          child: ListTile(
+                            title: Text('Snack'),
+                            subtitle:
+                            Text('Inventario de productos de snack'),
                           ),
-                          Expanded(
-                            child: ListTile(
-                              title: Text('Snack'),
-                              subtitle: Text('Inventario de productos de snack'),
-                            ),
-                          ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
-                GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => PastelScreen()),
-                    );
-                  },
-                  child: Visibility(
-                    visible: _isTemperaturaVisible,
-                    child: Card(
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Image.asset(
-                            'assets/past.png',
-                            width: 100,
-                            height: 100,
-                            fit: BoxFit.cover,
+              ),
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => PastelScreen()),
+                  );
+                },
+                child: Visibility(
+                  visible: _isTemperaturaVisible,
+                  child: Card(
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Image.asset(
+                          'assets/past.png',
+                          width: 100,
+                          height: 100,
+                          fit: BoxFit.cover,
+                        ),
+                        Expanded(
+                          child: ListTile(
+                            title: Text('Pasteles'),
+                            subtitle:
+                            Text('Inventario de productos de pastelerías'),
                           ),
-                          Expanded(
-                            child: ListTile(
-                              title: Text('Pasteles'),
-                              subtitle: Text('Inventario de productos de pastelerías'),
-                            ),
-                          ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
-                if (!_isPesoVisible || !_isTemperaturaVisible)
-                  Center(
-                    child: Text(
-                      'Mensaje general',
-                      style: TextStyle(fontSize: 24.0),
-                    ),
+              ),
+              if (!_isPesoVisible || !_isTemperaturaVisible)
+                Center(
+                  child: Text(
+                    'Mensaje general',
+                    style: TextStyle(fontSize: 24.0),
                   ),
-              ],
-            ),
+                ),
+            ],
           ),
-        ];
-      });
-    } else {
-      throw Exception('Error al cargar los datos de ThingSpeak');
-    }
+        ),
+      ];
+    });
   }
 
   void _onTabSelected(int index) {
@@ -168,4 +213,39 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
+  Widget buildBarChart() {
+    return BarChart(
+      BarChartData(
+        alignment: BarChartAlignment.center,
+        maxY: 6000, // Adjust this value to fit your data range
+        barGroups: sensorInfoList.map((sensorInfo) {
+          final sensorKey = sensorInfo.keys.first;
+          final sensorValue = sensorInfo.values.first;
+          final peso = sensorValue['Peso'] ?? 0.0;
+
+          final sensorNumber = int.parse(sensorKey.split('_').last); // Extract sensor number
+          return BarChartGroupData(
+            x: sensorNumber, // Convert the extracted sensor number to double
+            barRods: [
+              BarChartRodData(y: peso.toDouble(), colors: [Colors.blue]),
+            ],
+          );
+        }).toList(),
+        titlesData: FlTitlesData(
+          leftTitles: SideTitles(showTitles: true),
+          bottomTitles: SideTitles(
+            showTitles: true,
+            getTextStyles: (value, _) => const TextStyle(fontSize: 10), // Add an underscore for the unused argument
+          ),
+        ),
+        borderData: FlBorderData(show: true),
+        gridData: FlGridData(show: true),
+      ),
+    );
+  }
+
+
+
+
+
 }

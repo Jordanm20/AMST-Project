@@ -15,6 +15,8 @@ dependencies:
   firebase_core: ^2.15.0
   firebase_auth: ^4.7.3
   firebase_database: ^10.0.2
+  fl_chart: ^0.40.0    # Agrega la versión más reciente de fl_chart
+
 
 
 dev_dependencies:
