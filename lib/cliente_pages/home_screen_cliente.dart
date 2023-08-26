@@ -41,7 +41,7 @@ class HomeScreenState extends State<HomeScreen_cliente> {
             userData = event.snapshot.value as Map<dynamic, dynamic>;
             _pages.clear();
             _pages.add(
-              VendedoresPage_cliente(key: _vendedoresKey, user: userData),
+              ProductosPage_cliente(key: _vendedoresKey, user: userData),
             );
             _pages.add(CarritoPage_cliente(key: _carritoKey, user: userData));
             if (_currentIndex == 0) {
@@ -94,8 +94,8 @@ class HomeScreenState extends State<HomeScreen_cliente> {
                   ),
                   onPressed: () {
                     try {
-                      final VendedoresPageState vendedoresPageState =
-                          _vendedoresKey.currentState as VendedoresPageState;
+                      final ProductosPageState vendedoresPageState =
+                          _vendedoresKey.currentState as ProductosPageState;
                       vendedoresPageState.unsub();
                       subUser?.cancel();
                       Navigator.pushReplacement(
