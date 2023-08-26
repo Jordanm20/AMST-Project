@@ -8,13 +8,12 @@ class ProductosScreen extends StatefulWidget {
 }
 
 class _ProductosScreenState extends State<ProductosScreen> {
-  String _selectedDescription = 'Seleccionar una opción'; // Default value
-  List<String> _productDescriptions = ['Seleccionar una opción']; // Include the default option
+  String _selectedDescription = 'Seleccionar una opción';
+  List<String> _productDescriptions = ['Seleccionar una opción'];
   User? user;
   final FirebaseAuth _auth = FirebaseAuth.instance;
   DatabaseReference? databaseReference;
   Map<dynamic, dynamic>? userData = {};
-  Map<dynamic, dynamic>? userData2 = {};
   TextEditingController _descripcionController = TextEditingController();
   TextEditingController _cantidadController = TextEditingController();
   TextEditingController _pesoUnidadController = TextEditingController();
@@ -33,29 +32,24 @@ class _ProductosScreenState extends State<ProductosScreen> {
           userData = snapshot.value as Map<dynamic, dynamic>;
           _productDescriptions.addAll(userData?.values
               .map<String>((productData) => productData['descripcion'] as String)
-              .toList() ?? []);
+              .toList() ??
+              []);
 
-          cargarDatosProducto(_selectedDescription); // Llamar aquí para cargar los datos iniciales
+          cargarDatosProducto(_selectedDescription);
         });
-
-
       } catch (e) {}
     });
   }
 
-  // Método para cargar los datos del producto seleccionado en los controladores
   void cargarDatosProducto(String selectedDescription) {
     if (selectedDescription != 'Seleccionar una opción') {
-      // Obtener el dato del producto seleccionado desde userData
-      final selectedProductData = userData?.values.firstWhere((productData) =>
-      productData['descripcion'] == selectedDescription);
-      // Actualizar los controladores con los datos del producto
+      final selectedProductData = userData?.values
+          .firstWhere((productData) => productData['descripcion'] == selectedDescription);
       _descripcionController.text = selectedProductData['descripcion'];
       _cantidadController.text = selectedProductData['cantidad'].toString();
       _pesoUnidadController.text = selectedProductData['pesoUnidad'].toString();
       _precioUnidadController.text = selectedProductData['precioUnidad'].toString();
     } else {
-      // Si se selecciona la opción predeterminada, borra los datos de los controladores
       _descripcionController.clear();
       _cantidadController.clear();
       _pesoUnidadController.clear();
@@ -73,65 +67,158 @@ class _ProductosScreenState extends State<ProductosScreen> {
             onChanged: (String? newValue) {
               setState(() {
                 _selectedDescription = newValue!;
-                cargarDatosProducto(newValue!); // Cargar los datos cuando se selecciona una opción
+                cargarDatosProducto(newValue!);
               });
             },
-
-            items: _productDescriptions.map<DropdownMenuItem<String>>((String value) {
-              return DropdownMenuItem<String>(
-                value: value,
-                child: Text(value),
-              );
-            }).toList(),
+            items: _productDescriptions.map<DropdownMenuItem<String>>(
+                  (String value) {
+                return DropdownMenuItem<String>(
+                  value: value,
+                  child: Text(value),
+                );
+              },
+            ).toList(),
           ),
-          TextField(
-            controller: _descripcionController,
-            decoration: InputDecoration(
-              labelText: 'Descripción',
+          if (_selectedDescription != 'Seleccionar una opción')
+            Card(
+              color: Colors.blueGrey.shade200,
+              elevation: 5.0,
+              child: Padding(
+                padding: const EdgeInsets.all(4.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  mainAxisSize: MainAxisSize.max,
+                  children: [
+                    const Icon(Icons.local_dining, size: 70),
+                    SizedBox(
+                      width: 200,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const SizedBox(
+                            height: 5.0,
+                          ),
+                          RichText(
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                            text: TextSpan(
+                              text: _descripcionController.text + '\n',
+                              style: TextStyle(
+                                color: Colors.blueGrey.shade800,
+                                fontSize: 16.0,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          RichText(
+                            maxLines: 1,
+                            text: TextSpan(
+                              text: 'Cantidad: ' + _cantidadController.text + '\n',
+                              style: TextStyle(
+                                color: Colors.blueGrey.shade800,
+                                fontSize: 16.0,
+                              ),
+                            ),
+                          ),
+                          RichText(
+                            maxLines: 1,
+                            text: TextSpan(
+                              text: 'Peso por Unidad: ' + _pesoUnidadController.text + '\n',
+                              style: TextStyle(
+                                color: Colors.blueGrey.shade800,
+                                fontSize: 16.0,
+                              ),
+                            ),
+                          ),
+                          RichText(
+                            maxLines: 1,
+                            text: TextSpan(
+                              text: 'Precio por Unidad: \$' + _precioUnidadController.text + '\n',
+                              style: TextStyle(
+                                color: Colors.blueGrey.shade800,
+                                fontSize: 16.0,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
-          ),
-          SizedBox(height: 10.0),
-          TextField(
-            controller: _cantidadController,
-            decoration: InputDecoration(
-              labelText: 'Cantidad',
+          if (_selectedDescription != 'Seleccionar una opción')
+            Column(
+              children: [
+                TextField(
+                  controller: _descripcionController,
+                  decoration: InputDecoration(
+                    labelText: 'Descripción',
+                  ),
+                ),
+                SizedBox(height: 10.0),
+                TextField(
+                  controller: _cantidadController,
+                  decoration: InputDecoration(
+                    labelText: 'Cantidad',
+                  ),
+                  keyboardType: TextInputType.number,
+                ),
+                SizedBox(height: 10.0),
+                TextField(
+                  controller: _pesoUnidadController,
+                  decoration: InputDecoration(
+                    labelText: 'Peso por unidad',
+                  ),
+                  keyboardType: TextInputType.number,
+                ),
+                SizedBox(height: 10.0),
+                TextField(
+                  controller: _precioUnidadController,
+                  decoration: InputDecoration(
+                    labelText: 'Precio por unidad',
+                  ),
+                  keyboardType: TextInputType.number,
+                ),
+                SizedBox(height: 20.0),
+                ElevatedButton.icon(
+                  onPressed: () {
+                    editarProductoAFirebase();
+                  },
+                  style: ElevatedButton.styleFrom(
+                    primary: Colors.blue,
+                    padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                  ),
+                  icon: Icon(Icons.edit, size: 24),
+                  label: Text(
+                    'Editar',
+                    style: TextStyle(fontSize: 18),
+                  ),
+                ),
+                ElevatedButton.icon(
+                  onPressed: () {
+                    borrarProductoAFirebase();
+                  },
+                  style: ElevatedButton.styleFrom(
+                    primary: Colors.red,
+                    padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                  ),
+                  icon: Icon(Icons.delete, size: 24),
+                  label: Text(
+                    'Borrar Producto',
+                    style: TextStyle(fontSize: 18),
+                  ),
+                ),
+              ],
             ),
-            keyboardType: TextInputType.number,
-          ),
-          SizedBox(height: 10.0),
-          TextField(
-            controller: _pesoUnidadController,
-            decoration: InputDecoration(
-              labelText: 'Peso por unidad',
-            ),
-            keyboardType: TextInputType.number,
-          ),
-          SizedBox(height: 10.0),
-          TextField(
-            controller: _precioUnidadController,
-            decoration: InputDecoration(
-              labelText: 'Precio por unidad',
-            ),
-            keyboardType: TextInputType.number,
-          ),
-          SizedBox(height: 20.0),
-          ElevatedButton(
-            onPressed: () {
-              editarProductoAFirebase();
-            },
-            child: Text('Editar'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              borrarProductoAFirebase();
-            },
-            child: Text('Borrar Producto'),
-          ),
         ],
       ),
     );
   }
-  void editarProductoAFirebase() async {
+
+
+
+void editarProductoAFirebase() async {
     if (_selectedDescription == 'Seleccionar una opción') {
       // No se seleccionó ningún producto para editar
       return;
