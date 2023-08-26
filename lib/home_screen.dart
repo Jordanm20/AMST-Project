@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:iot/vendedor_pages/agregar_prod.dart';
+import 'package:iot/vendedor_pages/dashboard_vende.dart';
+import 'package:iot/vendedor_pages/productos_vend.dart';
 import 'snack_screen.dart';
 import 'pastel_screen.dart';
 import 'package:fl_chart/fl_chart.dart';
@@ -18,17 +21,12 @@ class _HomeScreenState extends State<HomeScreen> {
   DatabaseReference? databaseReference;
   Map<dynamic, dynamic>? userData = {};
   Map<dynamic, dynamic>? userData2 = {};
-  TextEditingController _descripcionController = TextEditingController();
-  TextEditingController _cantidadController = TextEditingController();
-  TextEditingController _pesoUnidadController = TextEditingController();
-  TextEditingController _precioUnidadController = TextEditingController();
 
   String _tituloAppbar = "";
 
   int _currentIndex = 0;
   List<Widget> _pages = [];
-  bool _isPesoVisible = true;
-  bool _isTemperaturaVisible = true;
+
   List<Map<String, dynamic>> sensorInfoList = [];
 
   @override
@@ -74,152 +72,17 @@ class _HomeScreenState extends State<HomeScreen> {
       _pages = [
         Center(
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(
-                _tituloAppbar,
-                style: TextStyle(fontSize: 24.0),
-              ),
-              Text(
-                "Dashboard",
-                style: TextStyle(fontSize: 24.0),
-              ),
-              Expanded(
-                child: Container(
-                  width: 300,
-                  height: 100,
-                  child: buildBarChart(),
-                ),
-              ),
+              Container(
+                width: 300, // Define the desired width
+                height: 600, // Define the desired height
+                child: DashboardSection(),
+              ), // Correct placement
             ],
           ),
         ),
-        Center(
-          child: Column(
-            children: [
-              GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => SnackScreen()),
-                  );
-                },
-                child: Visibility(
-                  visible: _isPesoVisible,
-                  child: Card(
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Image.asset(
-                          'assets/snack.png',
-                          width: 100,
-                          height: 100,
-                          fit: BoxFit.cover,
-                        ),
-                        Expanded(
-                          child: ListTile(
-                            title: Text('Snack'),
-                            subtitle: Text('Inventario de productos de snack'),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => PastelScreen()),
-                  );
-                },
-                child: Visibility(
-                  visible: _isTemperaturaVisible,
-                  child: Card(
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Image.asset(
-                          'assets/past.png',
-                          width: 100,
-                          height: 100,
-                          fit: BoxFit.cover,
-                        ),
-                        Expanded(
-                          child: ListTile(
-                            title: Text('Pasteles'),
-                            subtitle:
-                                Text('Inventario de productos de pastelerías'),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              if (!_isPesoVisible || !_isTemperaturaVisible)
-                Center(
-                  child: Text(
-                    'Mensaje general',
-                    style: TextStyle(fontSize: 24.0),
-                  ),
-                ),
-            ],
-          ),
-        ),
-        Center(
-          child: Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  'Agregar',
-                  style: TextStyle(fontSize: 24.0),
-                ),
-                SizedBox(height: 20.0),
-                TextField(
-                  controller: _descripcionController,
-                  decoration: InputDecoration(
-                    labelText: 'Descripción',
-                  ),
-                ),
-                SizedBox(height: 10.0),
-                TextField(
-                  controller: _cantidadController,
-                  decoration: InputDecoration(
-                    labelText: 'Cantidad',
-                  ),
-                  keyboardType: TextInputType.number,
-                ),
-                SizedBox(height: 10.0),
-                TextField(
-                  controller: _pesoUnidadController,
-                  decoration: InputDecoration(
-                    labelText: 'Peso por unidad',
-                  ),
-                  keyboardType: TextInputType.number,
-                ),
-                SizedBox(height: 10.0),
-                TextField(
-                  controller: _precioUnidadController,
-                  decoration: InputDecoration(
-                    labelText: 'Precio por unidad',
-                  ),
-                  keyboardType: TextInputType.number,
-                ),
-                SizedBox(height: 20.0),
-                ElevatedButton(
-                  onPressed: () {
-                    agregarProductoAFirebase();
-                  },
-                  child: Text('Agregar'),
-                ),
-              ],
-            ),
-          ),
-        ),
+        ProductosScreen(), // Use the new ProductosScreen widget
+        Agregarprod(), // Make sure Agregarprod is a valid widget
       ];
     });
   }
@@ -264,7 +127,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.dashboard),
-            label: 'Vitrinas',
+            label: 'Productos',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.add),
@@ -275,6 +138,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+<<<<<<< HEAD
   Widget buildBarChart() {
     return BarChart(
       BarChartData(
@@ -340,4 +204,9 @@ class _HomeScreenState extends State<HomeScreen> {
       _precioUnidadController.clear();
     }
   }
+=======
+
+
+
+>>>>>>> e0f9fddebff78c5521275e1022942b0cf52f5382
 }
