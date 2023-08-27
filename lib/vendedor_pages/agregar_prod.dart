@@ -25,9 +25,9 @@ class _AgregarprodState extends State<Agregarprod> {
 
       final productoData = {
         'descripcion': _descripcionController.text,
-        'cantidad': _cantidadController.text,
-        'pesoUnidad': _pesoUnidadController.text,
-        'precioUnidad': _precioUnidadController.text,
+        'cantidad': int.parse(_cantidadController.text),
+        'pesoUnidad': double.parse(_pesoUnidadController.text),
+        'precioUnidad': double.parse(_precioUnidadController.text),
       };
 
       final productoPath = 'users/vendedores/${user.uid}/productos/';
