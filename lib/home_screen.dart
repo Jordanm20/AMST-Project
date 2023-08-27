@@ -5,6 +5,8 @@ import 'package:iot/vendedor_pages/agregar_prod.dart';
 import 'package:iot/vendedor_pages/dashboard_vende.dart';
 import 'package:iot/vendedor_pages/productos_vend.dart';
 
+import 'login_screen.dart';
+
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
 
@@ -18,6 +20,8 @@ class _HomeScreenState extends State<HomeScreen> {
   DatabaseReference? databaseReference;
   Map<dynamic, dynamic>? userData = {};
   Map<dynamic, dynamic>? userData2 = {};
+  final GlobalKey _productosKey = GlobalKey();
+  final GlobalKey _agregarKey = GlobalKey();
 
   String _tituloAppbar = "";
 
@@ -65,8 +69,10 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       _pages = [
         DashboardSection(),
-        ProductosScreen(), // Use the new ProductosScreen widget
-        Agregarprod(), // Make sure Agregarprod is a valid widget
+        ProductosScreen(
+            key: _productosKey), // Use the new ProductosScreen widget
+        Agregarprod(
+            key: _agregarKey), // Make sure Agregarprod is a valid widget
       ];
     });
   }
@@ -110,6 +116,35 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         title: Text(_tituloAppbar),
         backgroundColor: Colors.black,
+        automaticallyImplyLeading: false,
+        actions: [
+          (_currentIndex == 0
+              ? IconButton(
+                  icon: const Icon(
+                    Icons.logout,
+                    color: Colors.white,
+                  ),
+                  onPressed: () {
+                    try {
+                      print("SALIENDO");
+                      // final ProductosScreenState productosScreenState =
+                      //     _productosKey.currentState as ProductosScreenState;
+                      // final AgregarprodState agregarprodState =
+                      //     _agregarKey.currentState as AgregarprodState;
+                      // productosScreenState.unsub();
+
+                      Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => LoginScreen(),
+                          ));
+                      // _auth.signOut();
+                    } catch (error) {
+                      print(error);
+                    }
+                  })
+              : const SizedBox()),
+        ],
       ),
       body: _pages[_currentIndex],
       bottomNavigationBar: BottomNavigationBar(

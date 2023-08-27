@@ -3,11 +3,13 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 
 class Agregarprod extends StatefulWidget {
+  const Agregarprod({super.key});
+
   @override
-  _AgregarprodState createState() => _AgregarprodState();
+  AgregarprodState createState() => AgregarprodState();
 }
 
-class _AgregarprodState extends State<Agregarprod> {
+class AgregarprodState extends State<Agregarprod> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final TextEditingController _descripcionController = TextEditingController();
   final TextEditingController _sensorIdController = TextEditingController();

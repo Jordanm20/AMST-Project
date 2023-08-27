@@ -5,11 +5,12 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 
 class ProductosScreen extends StatefulWidget {
+  const ProductosScreen({super.key});
   @override
-  _ProductosScreenState createState() => _ProductosScreenState();
+  ProductosScreenState createState() => ProductosScreenState();
 }
 
-class _ProductosScreenState extends State<ProductosScreen> {
+class ProductosScreenState extends State<ProductosScreen> {
   User? user;
   final FirebaseAuth _auth = FirebaseAuth.instance;
   DatabaseReference? databaseReference;
@@ -71,6 +72,10 @@ class _ProductosScreenState extends State<ProductosScreen> {
         _userProducts[_userProductIndex]['pesoUnidad'].toString();
     _precioUnidadController.text =
         (_userProducts[_userProductIndex]['precioUnidad'] / 100).toString();
+  }
+
+  void unsub() {
+    subProductos?.cancel();
   }
 
   @override

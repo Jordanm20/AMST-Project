@@ -28,14 +28,17 @@ class ProductosPageState extends State<ProductosPage_cliente> {
         productos.clear();
         if (event.snapshot.value == null) return;
         final vendedoresData = event.snapshot.value as Map<dynamic, dynamic>;
+
         vendedoresData.forEach((vendedorKey, vendedorValue) {
-          (vendedorValue['productos'] as Map<dynamic, dynamic>)
-              .forEach((productoKey, value) {
-            value['vendedor'] = vendedorValue['nombreEmpresa'];
-            value['vendedorId'] = vendedorKey;
-            value['productId'] = productoKey;
-            productos.add(value);
-          });
+          try {
+            (vendedorValue['productos'] as Map<dynamic, dynamic>)
+                .forEach((productoKey, value) {
+              value['vendedor'] = vendedorValue['nombreEmpresa'];
+              value['vendedorId'] = vendedorKey;
+              value['productId'] = productoKey;
+              productos.add(value);
+            });
+          } catch (ex) {}
         });
       });
     });
