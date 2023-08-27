@@ -36,10 +36,10 @@ class _HomeScreenState extends State<HomeScreen> {
       try {
         user = user!;
         databaseReference = FirebaseDatabase.instance.ref();
-        final snapshot =
-        await databaseReference!.child('users/vendedores/${user.uid}').get();
-        final snapshot2 =
-        await databaseReference!.child('sensores').get();
+        final snapshot = await databaseReference!
+            .child('users/vendedores/${user.uid}')
+            .get();
+        final snapshot2 = await databaseReference!.child('sensores').get();
         setState(() {
           userData = snapshot.value as Map<dynamic, dynamic>;
           userData2 = snapshot2.value as Map<dynamic, dynamic>;
@@ -58,8 +58,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
           print(sensorInfoList);
 
-          _tituloAppbar =
-          "¡Bienvenido/a, ${userData!['nombreEncargado']}!";
+          _tituloAppbar = "¡Bienvenido/a, ${userData!['nombreEncargado']}!";
           print("Resultvendedor ${_tituloAppbar}");
 
           loadInterfaz();
@@ -139,7 +138,75 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+<<<<<<< HEAD
+  Widget buildBarChart() {
+    return BarChart(
+      BarChartData(
+        alignment: BarChartAlignment.center,
+        maxY: 1000,
+        // Adjust this value to fit your data range
+        barGroups: sensorInfoList.map((sensorInfo) {
+          final sensorKey = sensorInfo.keys.first;
+          final sensorValue = sensorInfo.values.first;
+          final peso = sensorValue['Peso'] ?? 0.0;
+
+          final sensorNumber =
+              int.parse(sensorKey.split('_').last); // Extract sensor number
+          return BarChartGroupData(
+            x: sensorNumber, // Convert the extracted sensor number to double
+            barRods: [
+              BarChartRodData(y: peso.toDouble(), colors: [Colors.cyan]),
+            ],
+          );
+        }).toList(),
+        titlesData: FlTitlesData(
+          leftTitles: SideTitles(showTitles: true),
+          bottomTitles: SideTitles(
+            showTitles: true,
+            getTextStyles: (value, _) => const TextStyle(
+                fontSize: 10), // Add an underscore for the unused argument
+          ),
+        ),
+        borderData: FlBorderData(show: true),
+        gridData: FlGridData(show: false),
+      ),
+    );
+  }
+
+  void agregarProductoAFirebase() {
+    final user = _auth.currentUser;
+    if (user != null) {
+      final DatabaseReference databaseReference =
+          FirebaseDatabase.instance.reference();
+      final ariad = _descripcionController.text;
+      print("Before trimming: $ariad");
+      final descripcion =
+          ariad.replaceAll(' ', ''); // Reemplazar espacio por cadena vacía
+      print("After trimming: $descripcion");
+
+      final productoData = {
+        {
+          'descripcion': _descripcionController.text,
+          'cantidad': _cantidadController.text,
+          'pesoUnidad': _pesoUnidadController.text,
+          'precioUnidad': _precioUnidadController.text,
+        }
+      };
+
+      final productoPath =
+          'users/vendedores/${user.uid}/productos/pushId$descripcion';
+      databaseReference.child(productoPath).set(productoData);
+
+      // Limpia los campos del formulario después de agregar el producto
+      _descripcionController.clear();
+      _cantidadController.clear();
+      _pesoUnidadController.clear();
+      _precioUnidadController.clear();
+    }
+  }
+=======
 
 
 
+>>>>>>> e0f9fddebff78c5521275e1022942b0cf52f5382
 }
