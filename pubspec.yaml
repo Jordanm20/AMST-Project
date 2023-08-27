@@ -18,19 +18,23 @@ dependencies:
   fl_chart: ^0.40.0    # Agrega la versión más reciente de fl_chart
   firebase_messaging: ^14.6.7
   cloud_firestore: ^4.9.0
-
-
+  flutter_launcher_icons: ^0.13.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^2.0.0
 
+flutter_launcher_icons:
+  android: true
+  image_path_android: "assets/InventarIO.png"
+  min_sdk_android: 21
+
 flutter:
   uses-material-design: true
   assets:
     - assets/termo.png
     - assets/balan.png
-    - assets/InventarOI.png
+    - assets/InventarIO.png
     - assets/past.png
     - assets/snack.png

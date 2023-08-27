@@ -126,13 +126,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   onPressed: () {
                     try {
-                      print("SALIENDO");
-                      // final ProductosScreenState productosScreenState =
-                      //     _productosKey.currentState as ProductosScreenState;
-                      // final AgregarprodState agregarprodState =
-                      //     _agregarKey.currentState as AgregarprodState;
-                      // productosScreenState.unsub();
-
                       Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(

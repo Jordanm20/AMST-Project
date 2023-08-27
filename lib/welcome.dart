@@ -37,7 +37,7 @@ class WelcomeScreen extends StatelessWidget {
                             child: ClipRRect(
                               borderRadius: BorderRadius.circular(0),
                               child: Image.asset(
-                                'assets/InventarOI.png',
+                                'assets/InventarIO.png',
                                 fit: BoxFit.contain,
                               ),
                             ),
@@ -70,10 +70,12 @@ class WelcomeScreen extends StatelessWidget {
                           onPressed: () {
                             Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (context) => LoginScreen()),
+                              MaterialPageRoute(
+                                  builder: (context) => LoginScreen()),
                             );
                           },
-                          child: Text('Iniciar Sesión'), // Cambié el texto del botón para que esté en español
+                          child: Text(
+                              'Iniciar Sesión'), // Cambié el texto del botón para que esté en español
                           style: ElevatedButton.styleFrom(
                             primary: Color(0xFFEF5339),
                             textStyle: TextStyle(
