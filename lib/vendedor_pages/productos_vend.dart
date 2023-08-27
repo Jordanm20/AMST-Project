@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
@@ -8,16 +10,19 @@ class ProductosScreen extends StatefulWidget {
 }
 
 class _ProductosScreenState extends State<ProductosScreen> {
-  String _selectedDescription = 'Seleccionar una opción';
-  List<String> _productDescriptions = ['Seleccionar una opción'];
   User? user;
   final FirebaseAuth _auth = FirebaseAuth.instance;
   DatabaseReference? databaseReference;
-  Map<dynamic, dynamic>? userData = {};
-  TextEditingController _descripcionController = TextEditingController();
-  TextEditingController _cantidadController = TextEditingController();
-  TextEditingController _pesoUnidadController = TextEditingController();
-  TextEditingController _precioUnidadController = TextEditingController();
+  StreamSubscription<DatabaseEvent>? subProductos;
+  int _userProductIndex = 0;
+  List<Map<dynamic, dynamic>> _userProducts = [
+    {"descripcion": "Seleccione una opcion"}
+  ];
+  bool isSelected = false;
+  final TextEditingController _descripcionController = TextEditingController();
+  final TextEditingController _cantidadController = TextEditingController();
+  final TextEditingController _pesoUnidadController = TextEditingController();
+  final TextEditingController _precioUnidadController = TextEditingController();
 
   @override
   void initState() {
@@ -26,29 +31,39 @@ class _ProductosScreenState extends State<ProductosScreen> {
       try {
         user = user!;
         databaseReference = FirebaseDatabase.instance.ref();
-        final snapshot =
-        await databaseReference!.child('users/vendedores/${user.uid}/productos').get();
-        setState(() {
-          userData = snapshot.value as Map<dynamic, dynamic>;
-          _productDescriptions.addAll(userData?.values
-              .map<String>((productData) => productData['descripcion'] as String)
-              .toList() ??
-              []);
+        final snapshot = await databaseReference!
+            .child('users/vendedores/${user.uid}/productos')
+            .get();
 
-          cargarDatosProducto(_selectedDescription);
+        subProductos = snapshot.ref.onValue.listen((DatabaseEvent event) {
+          if (!mounted) return;
+          setState(() {
+            _userProducts.clear();
+            // _productDescriptions.clear();
+            //_productDescriptions.add('Seleccionar una opción');
+            Map<dynamic, dynamic> userData =
+                snapshot.value as Map<dynamic, dynamic>;
+            userData.forEach((key, value) {
+              value['productId'] = key;
+              //_productDescriptions.add(value['descripcion']);
+              _userProducts.add(value);
+            });
+          });
+          cargarDatosProducto('Seleccione una opción');
         });
       } catch (e) {}
     });
   }
 
   void cargarDatosProducto(String selectedDescription) {
-    if (selectedDescription != 'Seleccionar una opción') {
-      final selectedProductData = userData?.values
-          .firstWhere((productData) => productData['descripcion'] == selectedDescription);
+    if (selectedDescription != 'Seleccione una opción') {
+      final selectedProductData = _userProducts.firstWhere(
+          (productData) => productData['descripcion'] == selectedDescription);
       _descripcionController.text = selectedProductData['descripcion'];
       _cantidadController.text = selectedProductData['cantidad'].toString();
       _pesoUnidadController.text = selectedProductData['pesoUnidad'].toString();
-      _precioUnidadController.text = selectedProductData['precioUnidad'].toString();
+      _precioUnidadController.text =
+          (selectedProductData['precioUnidad'] / 100).toString();
     } else {
       _descripcionController.clear();
       _cantidadController.clear();
@@ -58,96 +73,40 @@ class _ProductosScreenState extends State<ProductosScreen> {
   }
 
   @override
+  void dispose() {
+    _descripcionController.dispose();
+    _cantidadController.dispose();
+    _pesoUnidadController.dispose();
+    _precioUnidadController.dispose();
+    subProductos?.cancel();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Center(
-      child: Column(
-        children: [
-          DropdownButton<String>(
-            value: _selectedDescription,
-            onChanged: (String? newValue) {
-              setState(() {
-                _selectedDescription = newValue!;
-                cargarDatosProducto(newValue!);
-              });
-            },
-            items: _productDescriptions.map<DropdownMenuItem<String>>(
-                  (String value) {
-                return DropdownMenuItem<String>(
-                  value: value,
-                  child: Text(value),
-                );
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
+          children: [
+            DropdownButton<String>(
+              hint: const Text('Seleccione una opcion'),
+              value: _userProducts[_userProductIndex]['descripcion'],
+              onChanged: (String? newValue) {
+                setState(() {
+                  // _selectedDescription = newValue!;
+                  _userProductIndex = _userProducts.indexWhere(
+                      (element) => element['descripcion'] == newValue);
+                  isSelected = true;
+                  //cargarDatosProducto(newValue);
+                });
               },
-            ).toList(),
-          ),
-          if (_selectedDescription != 'Seleccionar una opción')
-            Card(
-              color: Colors.blueGrey.shade200,
-              elevation: 5.0,
-              child: Padding(
-                padding: const EdgeInsets.all(4.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  mainAxisSize: MainAxisSize.max,
-                  children: [
-                    const Icon(Icons.local_dining, size: 70),
-                    SizedBox(
-                      width: 200,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const SizedBox(
-                            height: 5.0,
-                          ),
-                          RichText(
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 1,
-                            text: TextSpan(
-                              text: _descripcionController.text + '\n',
-                              style: TextStyle(
-                                color: Colors.blueGrey.shade800,
-                                fontSize: 16.0,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                          RichText(
-                            maxLines: 1,
-                            text: TextSpan(
-                              text: 'Cantidad: ' + _cantidadController.text + '\n',
-                              style: TextStyle(
-                                color: Colors.blueGrey.shade800,
-                                fontSize: 16.0,
-                              ),
-                            ),
-                          ),
-                          RichText(
-                            maxLines: 1,
-                            text: TextSpan(
-                              text: 'Peso por Unidad: ' + _pesoUnidadController.text + '\n',
-                              style: TextStyle(
-                                color: Colors.blueGrey.shade800,
-                                fontSize: 16.0,
-                              ),
-                            ),
-                          ),
-                          RichText(
-                            maxLines: 1,
-                            text: TextSpan(
-                              text: 'Precio por Unidad: \$' + _precioUnidadController.text + '\n',
-                              style: TextStyle(
-                                color: Colors.blueGrey.shade800,
-                                fontSize: 16.0,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+              items: _userProducts
+                  .map((product) => DropdownMenuItem<String>(
+                      value: product['descripcion'],
+                      child: Text(product['descripcion'])))
+                  .toList(),
             ),
-          if (_selectedDescription != 'Seleccionar una opción')
             Column(
               children: [
                 TextField(
@@ -183,7 +142,7 @@ class _ProductosScreenState extends State<ProductosScreen> {
                 SizedBox(height: 20.0),
                 ElevatedButton.icon(
                   onPressed: () {
-                    editarProductoAFirebase();
+                    // editarProductoAFirebase();
                   },
                   style: ElevatedButton.styleFrom(
                     primary: Colors.blue,
@@ -195,9 +154,10 @@ class _ProductosScreenState extends State<ProductosScreen> {
                     style: TextStyle(fontSize: 18),
                   ),
                 ),
+                SizedBox(height: 10.0),
                 ElevatedButton.icon(
                   onPressed: () {
-                    borrarProductoAFirebase();
+                    // borrarProductoAFirebase();
                   },
                   style: ElevatedButton.styleFrom(
                     primary: Colors.red,
@@ -211,88 +171,101 @@ class _ProductosScreenState extends State<ProductosScreen> {
                 ),
               ],
             ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
+  // void editarProductoAFirebase() async {
+  //   if (_userProducts[_userProductIndex]['descripcion'] == null) {
+  //     return;
+  //   }
 
+  //   try {
+  //     user = _auth.currentUser!;
+  //     databaseReference = FirebaseDatabase.instance.ref();
 
-void editarProductoAFirebase() async {
-    if (_selectedDescription == 'Seleccionar una opción') {
-      // No se seleccionó ningún producto para editar
-      return;
-    }
+  //     // Obtener la clave (pushId) del producto seleccionado
+  //     final selectedProductKey = _userProducts
+  //         .asMap()
+  //         .entries
+  //         .firstWhere(
+  //             (entry) => entry.value['descripcion'] == _selectedDescription)
+  //         .key;
 
-    try {
-      user = _auth.currentUser!;
-      databaseReference = FirebaseDatabase.instance.ref();
+  //     await databaseReference!
+  //         .child('users/vendedores/${user!.uid}/productos/$selectedProductKey')
+  //         .update({
+  //       'descripcion': _descripcionController.text,
+  //       'cantidad': int.parse(_cantidadController.text),
+  //       'pesoUnidad': double.parse(_pesoUnidadController.text),
+  //       'precioUnidad': (double.parse(_precioUnidadController.text) * 100),
+  //     });
 
-      // Obtener la clave (pushId) del producto seleccionado
-      final selectedProductKey = userData?.entries.firstWhere((entry) =>
-      entry.value['descripcion'] == _selectedDescription).key;
+  //     setState(() {
+  //       _productDescriptions = _userProducts
+  //               .asMap()
+  //               .values
+  //               .map<String>(
+  //                   (productData) => productData['descripcion'] as String)
+  //               .toList() ??
+  //           [];
+  //     });
 
-      // Actualizar los datos del producto en Firebase
-      await databaseReference!
-          .child('users/vendedores/${user!.uid}/productos/$selectedProductKey')
-          .update({
-        'descripcion': _descripcionController.text,
-        'cantidad': int.parse(_cantidadController.text),
-        'pesoUnidad': double.parse(_pesoUnidadController.text),
-        'precioUnidad': double.parse(_precioUnidadController.text),
-      });
+  //     // Llamar a cargarDatosProducto después de editar
+  //     cargarDatosProducto(_selectedDescription);
 
-      // Actualizar _productDescriptions después de editar
-      setState(() {
-        _productDescriptions = userData?.values
-            .map<String>((productData) => productData['descripcion'] as String)
-            .toList() ?? [];
-      });
+  //     print('Producto editado exitosamente.');
+  //   } catch (e) {
+  //     print('Error al editar el producto: $e');
+  //   }
+  // }
 
-      // Llamar a cargarDatosProducto después de editar
-      cargarDatosProducto(_selectedDescription);
+  // void borrarProductoAFirebase() async {
+  //   if (_selectedDescription == 'Seleccionar una opción') {
+  //     return;
+  //   }
 
-      print('Producto editado exitosamente.');
-    } catch (e) {
-      print('Error al editar el producto: $e');
-    }
+  //   try {
+  //     user = _auth.currentUser!;
+  //     databaseReference = FirebaseDatabase.instance.ref();
+
+  //     final selectedProductKey = _userProducts
+  //         .asMap()
+  //         .entries
+  //         .firstWhere(
+  //             (entry) => entry.value['descripcion'] == _selectedDescription)
+  //         .key;
+
+  //     await databaseReference!
+  //         .child('users/vendedores/${user!.uid}/productos/$selectedProductKey')
+  //         .remove();
+
+  //     setState(() {
+  //       _productDescriptions.remove(_selectedDescription);
+  //       _selectedDescription = 'Seleccionar una opción';
+  //     });
+
+  //     databaseReference = FirebaseDatabase.instance.ref('sensores/');
+
+  //     _descripcionController.clear();
+  //     _cantidadController.clear();
+  //     _pesoUnidadController.clear();
+  //     _precioUnidadController.clear();
+
+  //     showSnackBar("Producto eliminado exitosamente!");
+  //   } catch (e) {
+  //     showSnackBar('Error al borrar el producto: $e');
+  //   }
+  // }
+
+  void showSnackBar(String texto) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(texto),
+        duration: const Duration(seconds: 2),
+      ),
+    );
   }
-  void borrarProductoAFirebase() async {
-    if (_selectedDescription == 'Seleccionar una opción') {
-      // No se seleccionó ningún producto para borrar
-      return;
-    }
-
-    try {
-      user = _auth.currentUser!;
-      databaseReference = FirebaseDatabase.instance.ref();
-
-      // Obtener la clave (pushId) del producto seleccionado
-      final selectedProductKey = userData?.entries.firstWhere((entry) =>
-      entry.value['descripcion'] == _selectedDescription).key;
-
-      // Borrar el producto de Firebase
-      await databaseReference!
-          .child('users/vendedores/${user!.uid}/productos/$selectedProductKey')
-          .remove();
-
-      // Actualizar _productDescriptions después de borrar
-      setState(() {
-        _productDescriptions.remove(_selectedDescription);
-        _selectedDescription = 'Seleccionar una opción';
-      });
-
-      // Limpiar los controladores después de borrar
-      _descripcionController.clear();
-      _cantidadController.clear();
-      _pesoUnidadController.clear();
-      _precioUnidadController.clear();
-
-      print('Producto borrado exitosamente.');
-    } catch (e) {
-      print('Error al borrar el producto: $e');
-    }
-  }
-
-
 }

@@ -38,7 +38,6 @@ class CarritoPageState extends State<StatefulWidget> {
           carritoList.add(value);
         });
       });
-      print(_precioTotal);
     });
   }
 

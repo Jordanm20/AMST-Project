@@ -55,10 +55,7 @@ class _HomeScreenState extends State<HomeScreen> {
               sensorInfoList.add(sensorInfo);
             }
           });
-
-          print(sensorInfoList);
-
-          _tituloAppbar = "¡Bienvenido/a, ${userData!['nombreEncargado']}!";
+          _tituloAppbar = "Dashboard";
           print("Resultvendedor ${_tituloAppbar}");
 
           loadInterfaz();
@@ -70,17 +67,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void loadInterfaz() {
     setState(() {
       _pages = [
-        Center(
-          child: Column(
-            children: [
-              Container(
-                width: 300, // Define the desired width
-                height: 600, // Define the desired height
-                child: DashboardSection(),
-              ), // Correct placement
-            ],
-          ),
-        ),
+        DashboardSection(),
         ProductosScreen(), // Use the new ProductosScreen widget
         Agregarprod(), // Make sure Agregarprod is a valid widget
       ];
@@ -90,6 +77,17 @@ class _HomeScreenState extends State<HomeScreen> {
   void _onTabSelected(int index) {
     setState(() {
       _currentIndex = index;
+      switch (_currentIndex) {
+        case 0:
+          _tituloAppbar = "Dashboard";
+          break;
+        case 1:
+          _tituloAppbar = "Productos";
+          break;
+        case 2:
+          _tituloAppbar = "Agregar producto";
+          break;
+      }
     });
   }
 
@@ -98,10 +96,10 @@ class _HomeScreenState extends State<HomeScreen> {
     if (_pages.isEmpty) {
       return Scaffold(
         appBar: AppBar(
-          title: Text('Monitoreo de inventario y control de calidad'),
+          title: Text(_tituloAppbar),
           backgroundColor: Colors.black,
         ),
-        body: Center(
+        body: const Center(
           child: CircularProgressIndicator(),
         ),
       );
@@ -113,14 +111,14 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Monitoreo de inventario y control de calidad'),
+        title: Text(_tituloAppbar),
         backgroundColor: Colors.black,
       ),
       body: _pages[_currentIndex],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: _onTabSelected,
-        items: [
+        items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
             label: 'Inicio',
@@ -137,76 +135,4 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
-
-<<<<<<< HEAD
-  Widget buildBarChart() {
-    return BarChart(
-      BarChartData(
-        alignment: BarChartAlignment.center,
-        maxY: 1000,
-        // Adjust this value to fit your data range
-        barGroups: sensorInfoList.map((sensorInfo) {
-          final sensorKey = sensorInfo.keys.first;
-          final sensorValue = sensorInfo.values.first;
-          final peso = sensorValue['Peso'] ?? 0.0;
-
-          final sensorNumber =
-              int.parse(sensorKey.split('_').last); // Extract sensor number
-          return BarChartGroupData(
-            x: sensorNumber, // Convert the extracted sensor number to double
-            barRods: [
-              BarChartRodData(y: peso.toDouble(), colors: [Colors.cyan]),
-            ],
-          );
-        }).toList(),
-        titlesData: FlTitlesData(
-          leftTitles: SideTitles(showTitles: true),
-          bottomTitles: SideTitles(
-            showTitles: true,
-            getTextStyles: (value, _) => const TextStyle(
-                fontSize: 10), // Add an underscore for the unused argument
-          ),
-        ),
-        borderData: FlBorderData(show: true),
-        gridData: FlGridData(show: false),
-      ),
-    );
-  }
-
-  void agregarProductoAFirebase() {
-    final user = _auth.currentUser;
-    if (user != null) {
-      final DatabaseReference databaseReference =
-          FirebaseDatabase.instance.reference();
-      final ariad = _descripcionController.text;
-      print("Before trimming: $ariad");
-      final descripcion =
-          ariad.replaceAll(' ', ''); // Reemplazar espacio por cadena vacía
-      print("After trimming: $descripcion");
-
-      final productoData = {
-        {
-          'descripcion': _descripcionController.text,
-          'cantidad': _cantidadController.text,
-          'pesoUnidad': _pesoUnidadController.text,
-          'precioUnidad': _precioUnidadController.text,
-        }
-      };
-
-      final productoPath =
-          'users/vendedores/${user.uid}/productos/pushId$descripcion';
-      databaseReference.child(productoPath).set(productoData);
-
-      // Limpia los campos del formulario después de agregar el producto
-      _descripcionController.clear();
-      _cantidadController.clear();
-      _pesoUnidadController.clear();
-      _precioUnidadController.clear();
-    }
-  }
-=======
-
-
-
->>>>>>> e0f9fddebff78c5521275e1022942b0cf52f5382
 }

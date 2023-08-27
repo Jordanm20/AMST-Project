@@ -9,87 +9,163 @@ class Agregarprod extends StatefulWidget {
 
 class _AgregarprodState extends State<Agregarprod> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  TextEditingController _descripcionController = TextEditingController();
-  TextEditingController _cantidadController = TextEditingController();
-  TextEditingController _pesoUnidadController = TextEditingController();
-  TextEditingController _precioUnidadController = TextEditingController();
+  final TextEditingController _descripcionController = TextEditingController();
+  final TextEditingController _sensorIdController = TextEditingController();
+  final TextEditingController _pesoUnidadController = TextEditingController();
+  final TextEditingController _precioUnidadController = TextEditingController();
 
-  void agregarProductoAFirebase() {
+  void agregarProductoAFirebase() async {
     final user = _auth.currentUser;
-    if (user != null) {
-      final DatabaseReference databaseReference = FirebaseDatabase.instance.reference();
-      final ariad = _descripcionController.text;
-      print("Before trimming: $ariad");
-      final descripcion = ariad.replaceAll(' ', ''); // Reemplazar espacio por cadena vacía
-      print("After trimming: $descripcion");
-
-      final productoData = {
-        'descripcion': _descripcionController.text,
-        'cantidad': _cantidadController.text,
-        'pesoUnidad': _pesoUnidadController.text,
-        'precioUnidad': _precioUnidadController.text,
-      };
-
-      final productoPath = 'users/vendedores/${user.uid}/productos/';
-      databaseReference.child(productoPath).push().set(productoData);
-
-      // Limpia los campos del formulario después de agregar el producto
-      _descripcionController.clear();
-      _cantidadController.clear();
-      _pesoUnidadController.clear();
-      _precioUnidadController.clear();
+    if (user == null) return;
+    if (aFieldIsEmpty()) {
+      showSnackBar("Rellene todos los campos, por favor.");
+      return;
     }
+    if (await sensorDoesNotExist(_sensorIdController.text) ||
+        await sensorHasAnotherOwner(_sensorIdController.text)) {
+      showSnackBar("ID del sensor no válido.");
+      return;
+    }
+    if (await sensorIsMine(_sensorIdController.text)) {
+      showSnackBar("ID ya asociado a otro producto tuyo.");
+      return;
+    }
+
+    final DatabaseReference databaseReference =
+        FirebaseDatabase.instance.reference();
+
+    final productoData = {
+      'descripcion': _descripcionController.text,
+      'cantidad': 0,
+      'pesoUnidad': double.parse(_pesoUnidadController.text),
+      'precioUnidad': double.parse(_precioUnidadController.text) * 100,
+    };
+
+    final productoPath = 'users/vendedores/${user.uid}/productos/';
+    final orderPush = databaseReference.child(productoPath).push();
+    orderPush.set(productoData);
+
+    final sensorPath = 'sensores/${_sensorIdController.text}';
+    databaseReference.child(sensorPath).update(
+      {'idProducto': orderPush.key, 'idVendedor': user.uid},
+    );
+    clearForm();
+    showSnackBar("¡Producto añadido exitosamente!");
+  }
+
+  bool aFieldIsEmpty() {
+    if (_descripcionController.text == "" ||
+        _sensorIdController.text == "" ||
+        _pesoUnidadController.text == "" ||
+        _precioUnidadController.text == "") {
+      return true;
+    }
+    return false;
+  }
+
+  Future<bool> sensorDoesNotExist(String sensorId) async {
+    DatabaseReference sensorsRef =
+        FirebaseDatabase.instance.ref('sensores/$sensorId');
+    final sensorSnapshot = await sensorsRef.get();
+    if (!sensorSnapshot.exists) {
+      return true;
+    }
+    return false;
+  }
+
+  Future<bool> sensorIsMine(String sensorId) async {
+    DatabaseReference sensorsRef =
+        FirebaseDatabase.instance.ref('sensores/$sensorId/idVendedor');
+    final ownerSnapshot = await sensorsRef.get();
+    if (ownerSnapshot.exists) {
+      if (ownerSnapshot.value == _auth.currentUser?.uid) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  Future<bool> sensorHasAnotherOwner(String sensorId) async {
+    DatabaseReference sensorsRef =
+        FirebaseDatabase.instance.ref('sensores/$sensorId/idVendedor');
+    final ownerSnapshot = await sensorsRef.get();
+    if (ownerSnapshot.exists) {
+      if (ownerSnapshot.value != _auth.currentUser?.uid) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  void showSnackBar(String texto) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(texto),
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
+  void clearForm() {
+    _descripcionController.clear();
+    _sensorIdController.clear();
+    _pesoUnidadController.clear();
+    _precioUnidadController.clear();
+  }
+
+  @override
+  void dispose() {
+    _descripcionController.dispose();
+    _sensorIdController.dispose();
+    _pesoUnidadController.dispose();
+    _precioUnidadController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: Padding(
+      child: SingleChildScrollView(
         padding: const EdgeInsets.all(20.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(
-              'Agregar',
-              style: TextStyle(fontSize: 24.0),
-            ),
-            SizedBox(height: 20.0),
+            const SizedBox(height: 20.0),
             TextField(
               controller: _descripcionController,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: 'Descripción',
               ),
             ),
-            SizedBox(height: 10.0),
-            TextField(
-              controller: _cantidadController,
-              decoration: InputDecoration(
-                labelText: 'Cantidad',
-              ),
-              keyboardType: TextInputType.number,
-            ),
-            SizedBox(height: 10.0),
+            const SizedBox(height: 10.0),
             TextField(
               controller: _pesoUnidadController,
-              decoration: InputDecoration(
-                labelText: 'Peso por unidad',
+              decoration: const InputDecoration(
+                labelText: 'Peso por unidad (en gramos)',
               ),
               keyboardType: TextInputType.number,
             ),
-            SizedBox(height: 10.0),
+            const SizedBox(height: 10.0),
             TextField(
               controller: _precioUnidadController,
-              decoration: InputDecoration(
-                labelText: 'Precio por unidad',
+              decoration: const InputDecoration(
+                labelText: 'Precio por unidad (en dólares)',
               ),
               keyboardType: TextInputType.number,
             ),
-            SizedBox(height: 20.0),
+            const SizedBox(height: 10.0),
+            TextField(
+              controller: _sensorIdController,
+              decoration: const InputDecoration(
+                labelText: 'Sensor ID',
+              ),
+            ),
+            const SizedBox(height: 20.0),
             ElevatedButton(
               onPressed: () {
                 agregarProductoAFirebase();
               },
-              child: Text('Agregar'),
+              child: const Text('Agregar'),
             ),
           ],
         ),

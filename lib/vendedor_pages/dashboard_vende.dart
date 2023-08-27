@@ -1,5 +1,7 @@
 // dashboard_section.dart
 
+import 'dart:async';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
@@ -13,15 +15,11 @@ class DashboardSection extends StatefulWidget {
 class _DashboardSectionState extends State<DashboardSection> {
   User? user;
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  StreamSubscription<DatabaseEvent>? subSensores;
+  StreamSubscription<DatabaseEvent>? subVendedor;
   DatabaseReference? databaseReference;
   Map<dynamic, dynamic>? userData = {};
   Map<dynamic, dynamic>? userData2 = {};
-
-  String _tituloAppbar = "";
-
-  int _currentIndex = 0;
-  List<Widget> _pages = [];
-
   List<Map<String, dynamic>> sensorInfoList = [];
 
   @override
@@ -33,15 +31,18 @@ class _DashboardSectionState extends State<DashboardSection> {
         databaseReference = FirebaseDatabase.instance.ref();
 
         // Listen for changes to the user data
-        databaseReference!.child('users/vendedores/${user.uid}').onValue
+        subVendedor = databaseReference!
+            .child('users/vendedores/${user.uid}')
+            .onValue
             .listen((event) {
+          if (!mounted) return;
           setState(() {
             userData = event.snapshot.value as Map<dynamic, dynamic>;
           });
         });
 
-        // Listen for changes to the sensor data
-        databaseReference!.child('sensores').onValue.listen((event) {
+        subSensores =
+            databaseReference!.child('sensores').onValue.listen((event) {
           setState(() {
             userData2 = event.snapshot.value as Map<dynamic, dynamic>;
             sensorInfoList.clear();
@@ -59,65 +60,52 @@ class _DashboardSectionState extends State<DashboardSection> {
             });
           });
         });
-      } catch (e) {
-        // Handle errors
-      }
+      } catch (e) {}
     });
   }
 
+  @override
+  void dispose() {
+    subSensores?.cancel();
+    subVendedor?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            "Dashboard",
-            style: TextStyle(fontSize: 24.0),
-          ),
-          Expanded(
-            child: Container(
-              width: 300,
-              height: 100,
-              child: buildBarChart(),
+      child: SingleChildScrollView(
+        child: Container(
+          height: 450,
+          margin: const EdgeInsets.all(10),
+          child: BarChart(
+            BarChartData(
+              maxY: 600,
+              barGroups: sensorInfoList.map((sensorInfo) {
+                final sensorKey = sensorInfo.keys.first;
+                final sensorValue = sensorInfo.values.first;
+                final peso = sensorValue['Peso'] ?? 0.0;
+
+                final sensorNumber = int.parse(sensorKey.split('_').last);
+                return BarChartGroupData(
+                  x: sensorNumber,
+                  barRods: [
+                    BarChartRodData(y: peso.toDouble(), colors: [Colors.cyan]),
+                  ],
+                );
+              }).toList(),
+              titlesData: FlTitlesData(
+                leftTitles: SideTitles(showTitles: true),
+                bottomTitles: SideTitles(
+                  showTitles: true,
+                  getTextStyles: (value, _) => const TextStyle(fontSize: 10),
+                ),
+              ),
+              borderData: FlBorderData(show: true),
+              gridData: FlGridData(show: false),
             ),
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget buildBarChart() {
-    return BarChart(
-      BarChartData(
-        alignment: BarChartAlignment.center,
-        maxY: 600,
-        // Adjust this value to fit your data range
-        barGroups: sensorInfoList.map((sensorInfo) {
-          final sensorKey = sensorInfo.keys.first;
-          final sensorValue = sensorInfo.values.first;
-          final peso = sensorValue['Peso'] ?? 0.0;
-
-          final sensorNumber = int.parse(sensorKey
-              .split('_')
-              .last); // Extract sensor number
-          return BarChartGroupData(
-            x: sensorNumber, // Convert the extracted sensor number to double
-            barRods: [
-              BarChartRodData(y: peso.toDouble(), colors: [Colors.cyan]),
-            ],
-          );
-        }).toList(),
-        titlesData: FlTitlesData(
-          leftTitles: SideTitles(showTitles: true),
-          bottomTitles: SideTitles(
-            showTitles: true,
-            getTextStyles: (value, _) => const TextStyle(fontSize: 10),
-          ),
         ),
-        borderData: FlBorderData(show: true),
-        gridData: FlGridData(show: false),
       ),
     );
   }
