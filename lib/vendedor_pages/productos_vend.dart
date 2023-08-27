@@ -94,11 +94,9 @@ class _ProductosScreenState extends State<ProductosScreen> {
               value: _userProducts[_userProductIndex]['descripcion'],
               onChanged: (String? newValue) {
                 setState(() {
-                  // _selectedDescription = newValue!;
                   _userProductIndex = _userProducts.indexWhere(
                       (element) => element['descripcion'] == newValue);
                   isSelected = true;
-                  //cargarDatosProducto(newValue);
                 });
               },
               items: _userProducts
