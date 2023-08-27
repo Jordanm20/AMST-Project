@@ -299,18 +299,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ),
                         ),
-                        SizedBox(
-                          width: double.infinity,
-                          height: 50,
-                          child: SignInButton(
-                            Buttons.Google,
-                            onPressed: _loginWithGoogle,
-                            text: "Iniciar Sesión con Google",
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
-                        ),
+
                       ],
                     ),
                   ),
