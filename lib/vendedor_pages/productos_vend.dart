@@ -15,7 +15,7 @@ class _ProductosScreenState extends State<ProductosScreen> {
   DatabaseReference? databaseReference;
   StreamSubscription<DatabaseEvent>? subProductos;
   int _userProductIndex = 0;
-  List<Map<dynamic, dynamic>> _userProducts = [
+  final List<Map<dynamic, dynamic>> _userProducts = [
     {"descripcion": "Seleccione una opcion"}
   ];
   bool isSelected = false;
@@ -39,37 +39,38 @@ class _ProductosScreenState extends State<ProductosScreen> {
           if (!mounted) return;
           setState(() {
             _userProducts.clear();
-            // _productDescriptions.clear();
-            //_productDescriptions.add('Seleccionar una opción');
+            _userProducts.add({"descripcion": "Seleccione una opcion"});
+            _userProductIndex = 0;
+            if (!event.snapshot.exists) return;
             Map<dynamic, dynamic> userData =
-                snapshot.value as Map<dynamic, dynamic>;
+                event.snapshot.value as Map<dynamic, dynamic>;
             userData.forEach((key, value) {
               value['productId'] = key;
-              //_productDescriptions.add(value['descripcion']);
               _userProducts.add(value);
             });
+            cargarDatosProducto();
           });
-          cargarDatosProducto('Seleccione una opción');
         });
       } catch (e) {}
     });
   }
 
-  void cargarDatosProducto(String selectedDescription) {
-    if (selectedDescription != 'Seleccione una opción') {
-      final selectedProductData = _userProducts.firstWhere(
-          (productData) => productData['descripcion'] == selectedDescription);
-      _descripcionController.text = selectedProductData['descripcion'];
-      _cantidadController.text = selectedProductData['cantidad'].toString();
-      _pesoUnidadController.text = selectedProductData['pesoUnidad'].toString();
-      _precioUnidadController.text =
-          (selectedProductData['precioUnidad'] / 100).toString();
-    } else {
+  void cargarDatosProducto() {
+    if (_userProductIndex == 0) {
       _descripcionController.clear();
       _cantidadController.clear();
       _pesoUnidadController.clear();
       _precioUnidadController.clear();
+      return;
     }
+    _descripcionController.text =
+        _userProducts[_userProductIndex]['descripcion'];
+    _cantidadController.text =
+        _userProducts[_userProductIndex]['cantidad'].toString();
+    _pesoUnidadController.text =
+        _userProducts[_userProductIndex]['pesoUnidad'].toString();
+    _precioUnidadController.text =
+        (_userProducts[_userProductIndex]['precioUnidad'] / 100).toString();
   }
 
   @override
@@ -90,13 +91,17 @@ class _ProductosScreenState extends State<ProductosScreen> {
         child: Column(
           children: [
             DropdownButton<String>(
-              hint: const Text('Seleccione una opcion'),
+              hint: Text(_userProducts[_userProductIndex]['descripcion']),
               value: _userProducts[_userProductIndex]['descripcion'],
               onChanged: (String? newValue) {
                 setState(() {
                   _userProductIndex = _userProducts.indexWhere(
                       (element) => element['descripcion'] == newValue);
+                  if (_userProductIndex == 0) {
+                    return;
+                  }
                   isSelected = true;
+                  cargarDatosProducto();
                 });
               },
               items: _userProducts
@@ -105,158 +110,135 @@ class _ProductosScreenState extends State<ProductosScreen> {
                       child: Text(product['descripcion'])))
                   .toList(),
             ),
-            Column(
-              children: [
-                TextField(
-                  controller: _descripcionController,
-                  decoration: InputDecoration(
-                    labelText: 'Descripción',
+            if (_userProductIndex != 0)
+              Column(
+                children: [
+                  TextField(
+                    controller: _descripcionController,
+                    decoration: const InputDecoration(
+                      labelText: 'Descripción',
+                    ),
                   ),
-                ),
-                SizedBox(height: 10.0),
-                TextField(
-                  controller: _cantidadController,
-                  decoration: InputDecoration(
-                    labelText: 'Cantidad',
+                  const SizedBox(height: 10.0),
+                  TextField(
+                    enabled: false,
+                    controller: _cantidadController,
+                    decoration: const InputDecoration(
+                      labelText: 'Cantidad (definida por el peso)',
+                    ),
+                    keyboardType: TextInputType.number,
                   ),
-                  keyboardType: TextInputType.number,
-                ),
-                SizedBox(height: 10.0),
-                TextField(
-                  controller: _pesoUnidadController,
-                  decoration: InputDecoration(
-                    labelText: 'Peso por unidad',
+                  const SizedBox(height: 10.0),
+                  TextField(
+                    controller: _pesoUnidadController,
+                    decoration: const InputDecoration(
+                      labelText: 'Peso por unidad (en gramos)',
+                    ),
+                    keyboardType: TextInputType.number,
                   ),
-                  keyboardType: TextInputType.number,
-                ),
-                SizedBox(height: 10.0),
-                TextField(
-                  controller: _precioUnidadController,
-                  decoration: InputDecoration(
-                    labelText: 'Precio por unidad',
+                  const SizedBox(height: 10.0),
+                  TextField(
+                    controller: _precioUnidadController,
+                    decoration: const InputDecoration(
+                      labelText: 'Precio por unidad (en dólares)',
+                    ),
+                    keyboardType: TextInputType.number,
                   ),
-                  keyboardType: TextInputType.number,
-                ),
-                SizedBox(height: 20.0),
-                ElevatedButton.icon(
-                  onPressed: () {
-                    // editarProductoAFirebase();
-                  },
-                  style: ElevatedButton.styleFrom(
-                    primary: Colors.blue,
-                    padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                  const SizedBox(height: 20.0),
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      editarProductoAFirebase();
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue,
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 12, horizontal: 16),
+                    ),
+                    icon: const Icon(Icons.edit, size: 24),
+                    label: const Text(
+                      'Editar',
+                      style: TextStyle(fontSize: 18),
+                    ),
                   ),
-                  icon: Icon(Icons.edit, size: 24),
-                  label: Text(
-                    'Editar',
-                    style: TextStyle(fontSize: 18),
+                  const SizedBox(height: 10.0),
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      borrarProductoAFirebase();
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 12, horizontal: 16),
+                    ),
+                    icon: const Icon(Icons.delete, size: 24),
+                    label: const Text(
+                      'Borrar Producto',
+                      style: TextStyle(fontSize: 18),
+                    ),
                   ),
-                ),
-                SizedBox(height: 10.0),
-                ElevatedButton.icon(
-                  onPressed: () {
-                    // borrarProductoAFirebase();
-                  },
-                  style: ElevatedButton.styleFrom(
-                    primary: Colors.red,
-                    padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-                  ),
-                  icon: Icon(Icons.delete, size: 24),
-                  label: Text(
-                    'Borrar Producto',
-                    style: TextStyle(fontSize: 18),
-                  ),
-                ),
-              ],
-            ),
+                ],
+              ),
           ],
         ),
       ),
     );
   }
 
-  // void editarProductoAFirebase() async {
-  //   if (_userProducts[_userProductIndex]['descripcion'] == null) {
-  //     return;
-  //   }
+  void editarProductoAFirebase() async {
+    if (_userProducts[_userProductIndex]['productId'] == null) {
+      return;
+    }
 
-  //   try {
-  //     user = _auth.currentUser!;
-  //     databaseReference = FirebaseDatabase.instance.ref();
+    try {
+      user = _auth.currentUser!;
+      databaseReference = FirebaseDatabase.instance.ref();
+      final selectedProductKey = _userProducts[_userProductIndex]['productId'];
+      await databaseReference!
+          .child('users/vendedores/${user!.uid}/productos/$selectedProductKey')
+          .update({
+        'descripcion': _descripcionController.text,
+        'cantidad': int.parse(_cantidadController.text),
+        'pesoUnidad': double.parse(_pesoUnidadController.text),
+        'precioUnidad': (double.parse(_precioUnidadController.text) * 100),
+      });
 
-  //     // Obtener la clave (pushId) del producto seleccionado
-  //     final selectedProductKey = _userProducts
-  //         .asMap()
-  //         .entries
-  //         .firstWhere(
-  //             (entry) => entry.value['descripcion'] == _selectedDescription)
-  //         .key;
+      showSnackBar('Producto editado exitosamente.');
+    } catch (e) {
+      showSnackBar('Error al editar el producto: $e');
+    } finally {
+      FocusScope.of(context).unfocus();
+    }
+  }
 
-  //     await databaseReference!
-  //         .child('users/vendedores/${user!.uid}/productos/$selectedProductKey')
-  //         .update({
-  //       'descripcion': _descripcionController.text,
-  //       'cantidad': int.parse(_cantidadController.text),
-  //       'pesoUnidad': double.parse(_pesoUnidadController.text),
-  //       'precioUnidad': (double.parse(_precioUnidadController.text) * 100),
-  //     });
+  void borrarProductoAFirebase() async {
+    if (_userProducts[_userProductIndex]['productId'] == null) {
+      return;
+    }
 
-  //     setState(() {
-  //       _productDescriptions = _userProducts
-  //               .asMap()
-  //               .values
-  //               .map<String>(
-  //                   (productData) => productData['descripcion'] as String)
-  //               .toList() ??
-  //           [];
-  //     });
-
-  //     // Llamar a cargarDatosProducto después de editar
-  //     cargarDatosProducto(_selectedDescription);
-
-  //     print('Producto editado exitosamente.');
-  //   } catch (e) {
-  //     print('Error al editar el producto: $e');
-  //   }
-  // }
-
-  // void borrarProductoAFirebase() async {
-  //   if (_selectedDescription == 'Seleccionar una opción') {
-  //     return;
-  //   }
-
-  //   try {
-  //     user = _auth.currentUser!;
-  //     databaseReference = FirebaseDatabase.instance.ref();
-
-  //     final selectedProductKey = _userProducts
-  //         .asMap()
-  //         .entries
-  //         .firstWhere(
-  //             (entry) => entry.value['descripcion'] == _selectedDescription)
-  //         .key;
-
-  //     await databaseReference!
-  //         .child('users/vendedores/${user!.uid}/productos/$selectedProductKey')
-  //         .remove();
-
-  //     setState(() {
-  //       _productDescriptions.remove(_selectedDescription);
-  //       _selectedDescription = 'Seleccionar una opción';
-  //     });
-
-  //     databaseReference = FirebaseDatabase.instance.ref('sensores/');
-
-  //     _descripcionController.clear();
-  //     _cantidadController.clear();
-  //     _pesoUnidadController.clear();
-  //     _precioUnidadController.clear();
-
-  //     showSnackBar("Producto eliminado exitosamente!");
-  //   } catch (e) {
-  //     showSnackBar('Error al borrar el producto: $e');
-  //   }
-  // }
+    try {
+      user = _auth.currentUser!;
+      databaseReference = FirebaseDatabase.instance.ref();
+      final selectedProductKey = _userProducts[_userProductIndex]['productId'];
+      final selectedProductSensor =
+          _userProducts[_userProductIndex]['sensorId'];
+      await databaseReference!
+          .child('users/vendedores/${user!.uid}/productos/$selectedProductKey')
+          .remove();
+      databaseReference =
+          FirebaseDatabase.instance.ref('sensores/$selectedProductSensor');
+      await databaseReference!.child('idProducto').remove();
+      await databaseReference!.child('idVendedor').remove();
+      _descripcionController.clear();
+      _cantidadController.clear();
+      _pesoUnidadController.clear();
+      _precioUnidadController.clear();
+      showSnackBar("Producto eliminado exitosamente!");
+    } catch (e) {
+      showSnackBar('Error al borrar el producto: $e');
+    } finally {
+      FocusScope.of(context).unfocus();
+    }
+  }
 
   void showSnackBar(String texto) {
     ScaffoldMessenger.of(context).showSnackBar(

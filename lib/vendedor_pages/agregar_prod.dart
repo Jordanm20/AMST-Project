@@ -39,6 +39,7 @@ class _AgregarprodState extends State<Agregarprod> {
       'cantidad': 0,
       'pesoUnidad': double.parse(_pesoUnidadController.text),
       'precioUnidad': double.parse(_precioUnidadController.text) * 100,
+      'sensorId': _sensorIdController.text
     };
 
     final productoPath = 'users/vendedores/${user.uid}/productos/';
@@ -51,6 +52,7 @@ class _AgregarprodState extends State<Agregarprod> {
     );
     clearForm();
     showSnackBar("¡Producto añadido exitosamente!");
+    FocusScope.of(context).unfocus();
   }
 
   bool aFieldIsEmpty() {

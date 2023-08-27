@@ -4,9 +4,6 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:iot/vendedor_pages/agregar_prod.dart';
 import 'package:iot/vendedor_pages/dashboard_vende.dart';
 import 'package:iot/vendedor_pages/productos_vend.dart';
-import 'snack_screen.dart';
-import 'pastel_screen.dart';
-import 'package:fl_chart/fl_chart.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
