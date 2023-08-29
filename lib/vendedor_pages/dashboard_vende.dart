@@ -1,5 +1,7 @@
 // dashboard_section.dart
 
+// ignore_for_file: library_private_types_in_public_api
+
 import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
@@ -8,6 +10,8 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 
 class DashboardSection extends StatefulWidget {
+  const DashboardSection({super.key});
+
   @override
   _DashboardSectionState createState() => _DashboardSectionState();
 }
@@ -43,23 +47,23 @@ class _DashboardSectionState extends State<DashboardSection> {
 
         subSensores =
             databaseReference!.child('sensores').onValue.listen((event) {
-              setState(() {
-                userData2 = event.snapshot.value as Map<dynamic, dynamic>;
-                sensorInfoList.clear();
-                userData2?.forEach((sensorKey, sensorData) {
-                  if (sensorData.containsKey("idVendedor") &&
-                      sensorData["idVendedor"] == user?.uid) {
-                    Map<String, dynamic> sensorInfo = {
-                      sensorKey: {
-                        "Peso": sensorData["peso"],
-                        "idProduct": sensorData["idProducto"],
-                      }
-                    };
-                    sensorInfoList.add(sensorInfo);
+          setState(() {
+            userData2 = event.snapshot.value as Map<dynamic, dynamic>;
+            sensorInfoList.clear();
+            userData2?.forEach((sensorKey, sensorData) {
+              if (sensorData.containsKey("idVendedor") &&
+                  sensorData["idVendedor"] == user?.uid) {
+                Map<String, dynamic> sensorInfo = {
+                  sensorKey: {
+                    "Peso": sensorData["peso"],
+                    "idProduct": sensorData["idProducto"],
                   }
-                });
-              });
+                };
+                sensorInfoList.add(sensorInfo);
+              }
             });
+          });
+        });
       } catch (e) {}
     });
   }
@@ -81,7 +85,8 @@ class _DashboardSectionState extends State<DashboardSection> {
     double maxWeightValue = 0.0;
     for (final sensorInfo in sensorInfoList) {
       final sensorValue = sensorInfo.values.first;
-      final peso = (sensorValue['Peso'] ?? 0).toDouble(); // Explicitly cast to double
+      final peso =
+          (sensorValue['Peso'] ?? 0).toDouble(); // Explicitly cast to double
       if (peso > maxWeightValue) {
         maxWeightValue = peso;
       }
@@ -94,32 +99,30 @@ class _DashboardSectionState extends State<DashboardSection> {
           margin: const EdgeInsets.all(10),
           child: BarChart(
             BarChartData(
-              maxY: maxWeightValue.toDouble()+20,
+              maxY: maxWeightValue.toDouble() + 20,
               barGroups: sensorInfoList.map((sensorInfo) {
                 final sensorKey = sensorInfo.keys.first;
                 final sensorValue = sensorInfo.values.first;
                 final peso = sensorValue['Peso'] ?? 0.0;
 
-                final sensorNumber = int.parse(sensorKey
-                    .split('_')
-                    .last);
-                final sensorName = getSensorName(sensorNumber);
+                final sensorNumber = int.parse(sensorKey.split('_').last);
 
                 return BarChartGroupData(
                   x: sensorNumber,
                   barRods: [
-                    BarChartRodData(y: peso.toDouble(),width: 20,  colors: [Colors.cyan]),
+                    BarChartRodData(
+                        y: peso.toDouble(), width: 20, colors: [Colors.cyan]),
                   ],
                   showingTooltipIndicators: [0],
                 );
               }).toList(),
               titlesData: FlTitlesData(
                 topTitles: SideTitles(showTitles: false),
-                leftTitles: SideTitles(showTitles: true,
+                leftTitles: SideTitles(
+                  showTitles: true,
                   getTextStyles: (value, _) => const TextStyle(fontSize: 10),
                 ),
                 rightTitles: SideTitles(showTitles: false),
-
                 bottomTitles: SideTitles(
                   showTitles: true,
                   getTextStyles: (value, _) => const TextStyle(fontSize: 15),
@@ -132,13 +135,22 @@ class _DashboardSectionState extends State<DashboardSection> {
               ),
               borderData: FlBorderData(
                 show: true,
-                border: Border(
-                  bottom: BorderSide(color: Colors.black, width: 1), // Customize the bottom border
-                  left: BorderSide(color: Colors.black, width: 1),   // Customize the left border
-                  right: BorderSide(color: Colors.transparent, width: 0), // Hide the right border
-                  top: BorderSide(color: Colors.transparent, width: 0),   // Hide the top border
+                border: const Border(
+                  bottom: BorderSide(
+                      color: Colors.black,
+                      width: 1), // Customize the bottom border
+                  left: BorderSide(
+                      color: Colors.black,
+                      width: 1), // Customize the left border
+                  right: BorderSide(
+                      color: Colors.transparent,
+                      width: 0), // Hide the right border
+                  top: BorderSide(
+                      color: Colors.transparent,
+                      width: 0), // Hide the top border
                 ),
-              ),              gridData: FlGridData(show: false),
+              ),
+              gridData: FlGridData(show: false),
             ),
           ),
         ),

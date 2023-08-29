@@ -1,12 +1,16 @@
+// ignore_for_file: must_be_immutable
+
 import 'dart:async';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 
+// ignore: camel_case_types
 class ProductosPage_cliente extends StatefulWidget {
   Map<dynamic, dynamic>? user;
   ProductosPage_cliente({super.key, required this.user});
 
   @override
+  // ignore: no_logic_in_create_state
   ProductosPageState createState() => ProductosPageState(user);
 }
 
@@ -38,6 +42,7 @@ class ProductosPageState extends State<ProductosPage_cliente> {
               value['productId'] = productoKey;
               productos.add(value);
             });
+            // ignore: empty_catches
           } catch (ex) {}
         });
       });

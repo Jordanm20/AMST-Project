@@ -1,24 +1,23 @@
+// ignore_for_file: library_private_types_in_public_api, use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter_signin_button/button_list.dart';
-import 'package:flutter_signin_button/button_view.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 import 'home_screen.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'cliente_pages/home_screen_cliente.dart';
 
 class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
+
   @override
   _LoginScreenState createState() => _LoginScreenState();
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  TextEditingController _usernameController = TextEditingController();
-  TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
   bool _passwordVisibility = false;
-  GoogleSignIn _googleSignIn = GoogleSignIn();
-  FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
   @override
   void dispose() {
@@ -47,50 +46,29 @@ class _LoginScreenState extends State<LoginScreen> {
         dynamic data2 = event2.snapshot
             .value; // Almacenar el valor en una variable llamada "data"
         if (data != null) {
-          print("Result ${data}");
-          print("Es un cliente");
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (context) => HomeScreen_cliente()),
+            MaterialPageRoute(builder: (context) => const HomeScreen_cliente()),
           );
         }
         if (data2 != null) {
-          print("Result ${data2}");
-          print("Es un vendedor");
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (context) => HomeScreen()),
+            MaterialPageRoute(builder: (context) => const HomeScreen()),
           );
         }
         // Search for the user in the "clientes" section
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+          const SnackBar(
             content: Text('Error al iniciar sesión. Inténtalo de nuevo.'),
           ),
         );
       }
     } catch (error) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text('Error al iniciar sesión. Inténtalo de nuevo.'),
-        ),
-      );
-    }
-  }
-
-  void _loginWithGoogle() async {
-    try {
-      await _googleSignIn.signIn();
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => HomeScreen()),
-      );
-    } catch (error) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content:
-              Text('Error al iniciar sesión con Google. Inténtalo de nuevo.'),
         ),
       );
     }
@@ -110,7 +88,7 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Padding(
+                const Padding(
                   padding: EdgeInsets.only(left: 14, top: 75),
                   child: Text(
                     'Hola',
@@ -122,7 +100,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                 ),
-                Padding(
+                const Padding(
                   padding: EdgeInsets.only(left: 14, top: 10),
                   child: Text(
                     'Inicia Sesión!',
@@ -135,11 +113,11 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
                 Padding(
-                  padding: EdgeInsets.only(top: 90),
+                  padding: const EdgeInsets.only(top: 90),
                   child: Container(
                     width: 450,
                     height: 900,
-                    decoration: BoxDecoration(
+                    decoration: const BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.only(
                         topLeft: Radius.circular(50),
@@ -149,7 +127,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        Padding(
+                        const Padding(
                           padding: EdgeInsets.only(left: 15, top: 50),
                           child: Text(
                             'Usuario',
@@ -160,53 +138,53 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ),
                         Padding(
-                          padding: EdgeInsets.all(10),
+                          padding: const EdgeInsets.all(10),
                           child: TextFormField(
                             controller: _usernameController,
                             obscureText: false,
                             decoration: InputDecoration(
                               labelText: 'Usuario',
-                              labelStyle: TextStyle(
+                              labelStyle: const TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w900,
                               ),
                               enabledBorder: OutlineInputBorder(
-                                borderSide: BorderSide(
+                                borderSide: const BorderSide(
                                   color: Colors.grey,
                                   width: 5,
                                 ),
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               focusedBorder: OutlineInputBorder(
-                                borderSide: BorderSide(
+                                borderSide: const BorderSide(
                                   color: Colors.blue,
                                   width: 5,
                                 ),
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               errorBorder: OutlineInputBorder(
-                                borderSide: BorderSide(
+                                borderSide: const BorderSide(
                                   color: Colors.red,
                                   width: 5,
                                 ),
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               focusedErrorBorder: OutlineInputBorder(
-                                borderSide: BorderSide(
+                                borderSide: const BorderSide(
                                   color: Colors.red,
                                   width: 5,
                                 ),
                                 borderRadius: BorderRadius.circular(10),
                               ),
                             ),
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontFamily: 'Readex Pro',
                               fontSize: 14,
                               fontWeight: FontWeight.w900,
                             ),
                           ),
                         ),
-                        Padding(
+                        const Padding(
                           padding: EdgeInsets.only(left: 15, top: 30),
                           child: Text(
                             'Contraseña',
@@ -217,39 +195,39 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ),
                         Padding(
-                          padding: EdgeInsets.all(10),
+                          padding: const EdgeInsets.all(10),
                           child: TextFormField(
                             controller: _passwordController,
                             obscureText: !_passwordVisibility,
                             decoration: InputDecoration(
                               labelText: 'Contraseña',
-                              labelStyle: TextStyle(
+                              labelStyle: const TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w900,
                               ),
                               enabledBorder: OutlineInputBorder(
-                                borderSide: BorderSide(
+                                borderSide: const BorderSide(
                                   color: Colors.grey,
                                   width: 5,
                                 ),
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               focusedBorder: OutlineInputBorder(
-                                borderSide: BorderSide(
+                                borderSide: const BorderSide(
                                   color: Colors.blue,
                                   width: 5,
                                 ),
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               errorBorder: OutlineInputBorder(
-                                borderSide: BorderSide(
+                                borderSide: const BorderSide(
                                   color: Colors.red,
                                   width: 5,
                                 ),
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               focusedErrorBorder: OutlineInputBorder(
-                                borderSide: BorderSide(
+                                borderSide: const BorderSide(
                                   color: Colors.red,
                                   width: 5,
                                 ),
@@ -268,7 +246,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ),
                               ),
                             ),
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontFamily: 'Readex Pro',
                               fontSize: 14,
                               fontWeight: FontWeight.w900,
@@ -276,13 +254,19 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ),
                         Padding(
-                          padding: EdgeInsets.only(top: 20, bottom: 20),
+                          padding: const EdgeInsets.only(top: 20, bottom: 20),
                           child: SizedBox(
                             width: double.infinity,
                             height: 50,
                             child: ElevatedButton(
                               onPressed: _login,
-                              child: Text(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.black,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                              child: const Text(
                                 'Iniciar Sesión',
                                 style: TextStyle(
                                   color: Colors.white,
@@ -290,16 +274,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
-                              style: ElevatedButton.styleFrom(
-                                primary: Colors.black,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                              ),
                             ),
                           ),
                         ),
-
                       ],
                     ),
                   ),

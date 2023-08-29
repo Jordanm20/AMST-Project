@@ -1,9 +1,9 @@
 import 'dart:async';
 
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 
+// ignore: camel_case_types, must_be_immutable
 class CarritoPage_cliente extends StatefulWidget {
   Map<dynamic, dynamic>? user;
   CarritoPage_cliente({super.key, required this.user});

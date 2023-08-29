@@ -24,7 +24,7 @@ class HomeScreenState extends State<HomeScreen_cliente> {
   final GlobalKey _vendedoresKey = GlobalKey();
 
   final List<Widget> _pages = [
-    SizedBox(),
+    const SizedBox(),
   ];
   int _currentIndex = 0;
 
